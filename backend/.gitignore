@@ -1,0 +1,7 @@
+# Poetry
+poetry.lock
+
+# ML Models
+# ml_models/*.pt
+# ml_models/*.onnx
+# ml_models/*.pkl
