@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
 import { Play, Heart, Share2, Download, Music, RefreshCw } from 'lucide-react';
@@ -12,8 +12,7 @@ import {
 } from 'recharts';
 import ReactECharts from 'echarts-for-react';
 
-// ⭐️ 변경점: K-Means 결과 데이터 불러오기
-// (파일이 없으면 에러가 나니, src/data/clustered_data.json 파일이 꼭 있어야 합니다!)
+//테스트 데이터
 import clusteredData from '../data/clustered_data.json'; 
 
 // 샘플 트랙 데이터
@@ -117,9 +116,27 @@ export function Playlist() {
     { feature: 'Speechiness', value: 20 },
   ];
 
-  // ---------------------------------------------------------
-  // ⭐️ 핵심: 클러스터링 결과가 반영된 차트 옵션
-  // ---------------------------------------------------------
+  //zoom event
+  const zoomLevelRef=useRef<number>(1)
+  const onChartEvent={
+    'dataZoom':(params: any)=>{
+      let start=0;
+      let end=100;
+
+      if (params.batch && params.batch[0]){
+        start=params.batch[0].start;
+        end=params.batch[0].end;
+      }else{
+        start=params.start;
+        end=params.end;
+      }
+
+      const currentZoom=100/(end-start);
+      zoomLevelRef.current=currentZoom;
+    }
+  }
+
+  // 차트 옵션
   const getClusterChartOption = () => {
     return {
       backgroundColor: 'transparent',
@@ -130,38 +147,71 @@ export function Playlist() {
         borderColor: '#555',
         textStyle: { color: '#fff' },
         formatter: (params: any) => {
-          // params.data = [x, y, clusterIndex]
           // 파이썬은 0,1,2,3을 주지만, 프론트는 1,2,3,4를 사용하므로 +1
+          // zoom level에 따라 툴팁 내용을 동적으로 변경
+          const zoomLevel = zoomLevelRef
           const clusterIndex = params.data[2] + 1;
           const clusterInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
           
-          return `
-            <div style="font-weight: bold; margin-bottom: 4px; color: ${clusterInfo?.border || 'white'}">
-              ${clusterInfo?.name || 'Unknown Group'}
-            </div>
-            <div style="font-size: 11px; color: #ccc;">
-              Group: ${clusterIndex}<br/>
-              Pos: (${params.data[0].toFixed(1)}, ${params.data[1].toFixed(1)})
-            </div>
-          `;
+          // zoomLevel<3이면 클러스터 정보만 보여줌
+          if(zoomLevel.current < 3){
+            return `
+              <div style="font-weight: bold; margin-bottom: 4px; color: ${clusterInfo?.border || 'white'}">
+                ${clusterInfo?.name || 'Unknown Group'}
+              </div>
+              <div style="font-size: 11px; color: #ccc;">
+                확대해보세요
+              </div>
+            `;
+          }else{
+            //zoomLevel>=3이면 개별 곡 정보를 보여줌
+            return `
+               <div style="text-align: left;">
+                <div style="font-size: 10px; color: #aaa; margin-bottom: 2px;">Track Info</div>
+                <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">
+                  Track #${params.dataIndex}
+                </div>
+                <div style="color: ${clusterInfo?.border}; font-size: 11px;">
+                  ${clusterInfo?.name}
+                </div>
+              </div>
+            `;
+          }
         }
       },
-      xAxis: { show: false, scale: true },
-      yAxis: { show: false, scale: true },
+      xAxis: { type:'value', show: false, scale: true },
+      yAxis: { type:'value', show: false, scale: true },
       dataZoom: [
-        { type: 'inside', xAxisIndex: 0, filterMode: 'empty' },
-        { type: 'inside', yAxisIndex: 0, filterMode: 'empty' }
+        { type: 'inside', 
+          xAxisIndex: [0], 
+          filterMode: 'empty',
+          maxSpan: 100,
+          minSpan: 12.5,
+          zoomOnMouseWheel: true, 
+          moveOnMouseMove: true,  
+          moveOnMouseWheel: true,
+         },{ type: 'inside', 
+          yAxisIndex: [0],
+          filterMode: 'empty',
+          maxspan: 100,
+          minSpan: 12.5,
+          zoomOnMouseWheel: true, 
+          moveOnMouseMove: true,  
+          moveOnMouseWheel: true,
+         },
       ],
+      animation: false,
+      animationDuration:0,
       series: [
         {
           type: 'scatter',
           symbolSize: 8, // 점 크기 살짝 키움
           
-          // ⭐️ 데이터 연결 (x, y, cluster_id)
+          // 데이터 연결
           data: clusteredData, 
 
           itemStyle: {
-            // 🎨 클러스터 ID(3번째 값)에 따라 색상 자동 지정
+            // 클러스터 ID(3번째 값)에 따라 색상 자동 지정
             color: (params: any) => {
               const clusterIndex = params.data[2] + 1; // 0->1, 1->2...
               const colorInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
@@ -278,11 +328,12 @@ export function Playlist() {
               음악 클러스터 맵
             </h2>
             
-            {/* ⭐️ 차트가 들어갈 공간 */}
+            {/* echart */}
             <div className="relative w-full flex-1 min-h-[400px] bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-white/10 overflow-hidden">
                <ReactECharts
                   option={getClusterChartOption()}
                   style={{ height: '100%', width: '100%' }}
+                  onEvents={onChartEvent}
                 />
                 {/* 배경 라벨 */}
                 <div className="absolute bottom-3 right-4 text-xs font-medium text-white/30 pointer-events-none">
