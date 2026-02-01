@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
 import { Play, Heart, Share2, Download, Music, RefreshCw } from 'lucide-react';
@@ -11,18 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import ReactECharts from 'echarts-for-react';
-
-//테스트 데이터
-import clusteredData from '../data/clustered_data.json'; 
-
-// 샘플 트랙 데이터
-const allTracks: Track[] = [
-  { id: '1', title: 'Hype Boy', artist: 'NewJeans', album: 'New Jeans', duration: '3:20', imageUrl: 'https://placehold.co/400/4f46e5/ffffff?text=HypeBoy', genre: 'K-Pop', bpm: 130 },
-  { id: '2', title: 'Ditto', artist: 'NewJeans', album: 'OMG', duration: '3:05', imageUrl: 'https://placehold.co/400/ec4899/ffffff?text=Ditto', genre: 'K-Pop', bpm: 134 },
-  { id: '3', title: 'Seven', artist: 'Jung Kook', album: 'Golden', duration: '3:04', imageUrl: 'https://placehold.co/400/10b981/ffffff?text=Seven', genre: 'Pop', bpm: 125 },
-  { id: '4', title: 'I AM', artist: 'IVE', album: 'I\'ve IVE', duration: '3:00', imageUrl: 'https://placehold.co/400/f59e0b/ffffff?text=IAM', genre: 'K-Pop', bpm: 128 },
-  { id: '5', title: 'Super Shy', artist: 'NewJeans', album: 'Get Up', duration: '2:34', imageUrl: 'https://placehold.co/400/3b82f6/ffffff?text=SuperShy', genre: 'K-Pop', bpm: 150 },
-];
+import { useDataStore } from '../stores/useDataStore';
 
 // 클러스터 색상 정의 (1~4번 그룹)
 // 1. 그라데이션을 위한 기본 4가지 색상 정의 (RGB 값)
@@ -87,17 +76,27 @@ export function Playlist() {
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
 
+  const {tracks, clusterData, fetchAllData, isLoading } = useDataStore();
+
   useEffect(() => {
+    if (tracks.length === 0) {
+      fetchAllData();
+    }
+  }, [fetchAllData, tracks.length])
+
+  useEffect(() => {
+    if (tracks.length === 0) return;
     const selectedTrackIds = localStorage.getItem('selectedTracks');
     
-    // 데이터 로드 로직 (데이터가 없으면 전체 트랙 보여줌)
+    // 데이터 로드 
     const ids = selectedTrackIds ? JSON.parse(selectedTrackIds) : [];
-    const selectedTracks = allTracks.filter((track) => ids.includes(track.id));
-    const recommendedTracks = allTracks.filter((track) => !ids.includes(track.id));
+
+    const selectedTracks = tracks.filter((track) => ids.includes(track.id));
+    const recommendedTracks = tracks.filter((track) => !ids.includes(track.id));
     const finalPlaylist = [...selectedTracks, ...recommendedTracks.slice(0, 6)];
     
-    setPlaylistTracks(finalPlaylist.length > 0 ? finalPlaylist : allTracks);
-  }, [navigate]);
+    setPlaylistTracks(finalPlaylist.length > 0 ? finalPlaylist : tracks);
+  }, [navigate, tracks]);
 
   const playTrack = (trackId: string) => {
     setCurrentPlaying(currentPlaying === trackId ? null : trackId);
@@ -208,7 +207,7 @@ export function Playlist() {
           symbolSize: 8, // 점 크기 살짝 키움
           
           // 데이터 연결
-          data: clusteredData, 
+          data: clusterData, 
 
           itemStyle: {
             // 클러스터 ID(3번째 값)에 따라 색상 자동 지정
