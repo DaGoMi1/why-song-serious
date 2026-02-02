@@ -17,12 +17,8 @@ class Track(Base):
     album: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     popularity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    preview_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
-    # Audio features (6개 feature, 0.00~1.00)
-    audio_features: Mapped[list] = mapped_column(ARRAY(DECIMAL(3, 2)), nullable=False)
-    
     # Embeddings for vector search
-    emb_deepfm: Mapped[list] = mapped_column(Vector(64), nullable=False)
-    emb_cml: Mapped[list] = mapped_column(Vector(64), nullable=False)
+    audio_features: Mapped[list] = mapped_column(Vector(6), nullable=False)
+    embedding: Mapped[list] = mapped_column(Vector(64), nullable=False)
