@@ -80,6 +80,7 @@ export function Preferences() {
     }), {})
   );
 
+  // 슬라이더 움직이면 값 변경
   const handleSliderChange = (featureId: string, value: number) => {
     setFeatureValues((prev) => ({
       ...prev,
@@ -88,7 +89,7 @@ export function Preferences() {
   };
 
   const handleContinue = async () => {
-    // Store preferences in localStorage for mock data
+    // Store에 preferences 저장
     const payload = {
       energy: featureValues['energy'],
       valence: featureValues['valence'],

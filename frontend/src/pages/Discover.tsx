@@ -8,7 +8,7 @@ const TRACKS_PER_PAGE = 10;
 export function Discover() {
   const navigate = useNavigate();
   
-  // ⭐️ 스토어에서 데이터 가져오기
+  // store서 데이터 가져옴
   const { fetchRetrievals, retrievalTracks, isLoading, preferences } = useDataStore();
 
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
@@ -16,16 +16,16 @@ export function Discover() {
 
   useEffect(() => {
       if (retrievalTracks.length === 0) {
-        // 스토어에 취향 정보가 있는지 확인
+        // 스토어에 preference가 있는지 확인
         if (preferences) {
-          fetchRetrievals(preferences); // 바로 사용!
+          fetchRetrievals(preferences);
         } else {
-          alert("취향 정보가 없습니다.");
+          alert("preferences 정보가 없습니다.");
           navigate('/preferences');
         }
       }
     }, [fetchRetrievals, retrievalTracks.length, navigate, preferences]);
-  // 페이지네이션 계산 (mockTracks -> tracks 로 변경)
+ 
   const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;
   const endIndex = startIndex + TRACKS_PER_PAGE;
@@ -41,7 +41,8 @@ export function Discover() {
 
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
-      setSelectedTracks(selectedTracks); // 스토어에 선택된 트랙들 저장
+      // store에 선택된 트랙들 저장
+      setSelectedTracks(selectedTracks); 
       navigate('/playlist');
     }
   };

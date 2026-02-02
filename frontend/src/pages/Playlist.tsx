@@ -13,8 +13,8 @@ import {
 import ReactECharts from 'echarts-for-react';
 import { useDataStore } from '../stores/useDataStore';
 
-// 클러스터 색상 정의 (1~4번 그룹)
-// 1. 그라데이션을 위한 기본 4가지 색상 정의 (RGB 값)
+// 클러스터 색상 정의 
+// 기본적으로 4가지 색상을 정하고 그 사이를 그라데이션으로 부드럽게 연결
 const baseColors = [
   { r: 59, g: 130, b: 246, name: 'test' }, // 파랑 (#3b82f6)
   { r: 239, g: 68, b: 68, name: 'test' },  // 빨강 (#ef4444)
@@ -22,7 +22,6 @@ const baseColors = [
   { r: 20, g: 184, b: 166, name: 'test' },   // 청록 (#14b8a6)
 ];
 
-// 2. 두 색상 사이를 섞어주는 함수 (Interpolation)
 const interpolateColor = (color1: any, color2: any, factor: number) => {
   const result = {
     r: Math.round(color1.r + (color2.r - color1.r) * factor),
@@ -32,7 +31,6 @@ const interpolateColor = (color1: any, color2: any, factor: number) => {
   return result;
 };
 
-// 3. RGB를 Hex(#RRGGBB)로 변환하는 함수
 const rgbToHex = (r: number, g: number, b: number) => {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
@@ -105,6 +103,7 @@ export function Playlist() {
     navigate('/preferences');
   };
   console.log("track data:", playlistTracks);
+
   // audio features 계산
   const audioFeatures = useMemo(() => {
     if (playlistTracks.length === 0) return [
@@ -125,8 +124,9 @@ export function Playlist() {
     }), { energy: 0, danceability: 0, valence: 0, acousticness: 0, instrumentalness: 0 });
 
     const count = playlistTracks.length;
-    const avg = (val: number) => Math.round(val / count); // 정수로 반올림
+    const avg = (val: number) => Math.round(val / count);
     console.log('Audio Feature Sums:', sum);
+
     // 차트용 포맷으로 변환
     return [
       { feature: 'Energy', value: avg(sum.energy) },
@@ -187,6 +187,7 @@ export function Playlist() {
           const clusterIndex = params.data[2] + 1;
           const clusterInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
           const trackId = params.data[3];
+
           // zoomLevel<3이면 클러스터 정보만 보여줌
           if (zoomLevel.current < 3) {
             return `
@@ -241,7 +242,7 @@ export function Playlist() {
       series: [
         {
           type: 'scatter',
-          symbolSize: 8, // 점 크기 살짝 키움
+          symbolSize: 8, 
 
           // 데이터 연결
           data: formattedClusterData,

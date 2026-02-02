@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'; // 👈 추가됨
 
-// 1. 데이터 타입
 interface Preferences {
     energy: number;
     valence: number;
@@ -11,7 +10,6 @@ interface Preferences {
     tempo: number;
 }
 
-// 2. 인터페이스
 interface PlaylistExplanation {
     name: string;
     description: string;
@@ -19,9 +17,11 @@ interface PlaylistExplanation {
 
 interface DataState {
     preferences: Preferences | null;
-    setPreferences: (prefs: Preferences) => void; // preferences 저장
+    // preferences 저장
+    setPreferences: (prefs: Preferences) => void; 
 
     selectedTracks: string[];
+    // discover에서 선택한 트랙들 저장
     setSelectedTracks: (tracks: string[]) => void;
 
     retrievalTracks: any[];
@@ -35,11 +35,9 @@ interface DataState {
     fetchRecommendations: (prefs: Preferences, tracks: string[]) => Promise<void>;
 }
 
-// 3. 구현 (persist 적용)
 export const useDataStore = create<DataState>()(
     persist(
-        (set, get) => ({
-            // 초기값
+        (set) => ({
             preferences: null,
             selectedTracks: [],
             retrievalTracks: [],
@@ -54,7 +52,7 @@ export const useDataStore = create<DataState>()(
             setPreferences: (prefs) => set({ preferences: prefs }),
             setSelectedTracks: (tracks) => set({ selectedTracks: tracks }),
 
-            // Discover 데이터 (GET -> POST)
+            // preference를 전달하고 retrieval 데이터를 받아옴
             fetchRetrievals: async (prefs) => {
                 set({ isLoading: true, error: null });
                 try {
@@ -74,7 +72,7 @@ export const useDataStore = create<DataState>()(
                 }
             },
 
-            // Playlist 데이터
+            // preferences와 선택된 트랙들을 전달하고 추천 결과를 받아옴
             fetchRecommendations: async (prefs, tracks) => {
                 set({ isLoading: true, error: null });
                 try {
@@ -101,10 +99,9 @@ export const useDataStore = create<DataState>()(
             }
         }),
         {
-            name: 'music-storage', // ⭐️ 로컬 스토리지에 저장될 키 이름
-            storage: createJSONStorage(() => localStorage), // 저장소 지정
-            // preferences만 저장하고 싶다면 아래 옵션 사용 (지금은 다 저장해도 무방)
-            // partialize: (state) => ({ preferences: state.preferences }), 
+            // 로컬 스토리지
+            name: 'music-storage', 
+            storage: createJSONStorage(() => localStorage), 
         }
     )
 );
