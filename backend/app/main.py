@@ -26,6 +26,7 @@ app = FastAPI(
     description="음악 취향 기반 탐색 및 시각화 서비스",
     version="0.1.0",
     lifespan=lifespan,
+    root_path="/api"
 )
 
 # CORS
