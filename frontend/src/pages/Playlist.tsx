@@ -44,7 +44,7 @@ const generateGradientColors = (totalSteps: number) => {
   for (let i = 0; i < totalSteps; i++) {
     // 현재 단계가 전체 중 어디쯤인지 비율 계산 (0 ~ 1)
     const distinctRatio = i / (totalSteps - 1);
-    
+
     // 전체 비율을 3개의 구간(파랑-빨강, 빨강-보라, 보라-청록)으로 나눔
     const segment = Math.min(Math.floor(distinctRatio * (baseColors.length - 1)), baseColors.length - 2);
     const segmentRatio = (distinctRatio * (baseColors.length - 1)) - segment;
@@ -76,27 +76,22 @@ export function Playlist() {
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
 
-  const {tracks, clusterData, fetchAllData, isLoading } = useDataStore();
+  const { recommendedTracks, clusterData, isLoading, fetchRecommendations, preferences, selectedTracks } = useDataStore();
 
   useEffect(() => {
-    if (tracks.length === 0) {
-      fetchAllData();
+    if (recommendedTracks.length === 0) {
+      fetchRecommendations(preferences!, selectedTracks);
     }
-  }, [fetchAllData, tracks.length])
+  }, [fetchRecommendations, recommendedTracks.length])
 
   useEffect(() => {
-    if (tracks.length === 0) return;
-    const selectedTrackIds = localStorage.getItem('selectedTracks');
-    
-    // 데이터 로드 
-    const ids = selectedTrackIds ? JSON.parse(selectedTrackIds) : [];
+    if (recommendedTracks.length === 0) return;
 
-    const selectedTracks = tracks.filter((track) => ids.includes(track.id));
-    const recommendedTracks = tracks.filter((track) => !ids.includes(track.id));
-    const finalPlaylist = [...selectedTracks, ...recommendedTracks.slice(0, 6)];
-    
-    setPlaylistTracks(finalPlaylist.length > 0 ? finalPlaylist : tracks);
-  }, [navigate, tracks]);
+    // 선택한 트랙들 로드
+    //const ids = selectedTracks;
+
+    setPlaylistTracks(recommendedTracks);
+  }, [navigate, recommendedTracks]);
 
   const playTrack = (trackId: string) => {
     setCurrentPlaying(currentPlaying === trackId ? null : trackId);
@@ -116,22 +111,22 @@ export function Playlist() {
   ];
 
   //zoom event
-  const zoomLevelRef=useRef<number>(1)
-  const onChartEvent={
-    'dataZoom':(params: any)=>{
-      let start=0;
-      let end=100;
+  const zoomLevelRef = useRef<number>(1)
+  const onChartEvent = {
+    'dataZoom': (params: any) => {
+      let start = 0;
+      let end = 100;
 
-      if (params.batch && params.batch[0]){
-        start=params.batch[0].start;
-        end=params.batch[0].end;
-      }else{
-        start=params.start;
-        end=params.end;
+      if (params.batch && params.batch[0]) {
+        start = params.batch[0].start;
+        end = params.batch[0].end;
+      } else {
+        start = params.start;
+        end = params.end;
       }
 
-      const currentZoom=100/(end-start);
-      zoomLevelRef.current=currentZoom;
+      const currentZoom = 100 / (end - start);
+      zoomLevelRef.current = currentZoom;
     }
   }
 
@@ -151,9 +146,9 @@ export function Playlist() {
           const zoomLevel = zoomLevelRef
           const clusterIndex = params.data[2] + 1;
           const clusterInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
-          
+
           // zoomLevel<3이면 클러스터 정보만 보여줌
-          if(zoomLevel.current < 3){
+          if (zoomLevel.current < 3) {
             return `
               <div style="font-weight: bold; margin-bottom: 4px; color: ${clusterInfo?.border || 'white'}">
                 ${clusterInfo?.name || 'Unknown Group'}
@@ -162,7 +157,7 @@ export function Playlist() {
                 확대해보세요
               </div>
             `;
-          }else{
+          } else {
             //zoomLevel>=3이면 개별 곡 정보를 보여줌
             return `
                <div style="text-align: left;">
@@ -178,36 +173,38 @@ export function Playlist() {
           }
         }
       },
-      xAxis: { type:'value', show: false, scale: true },
-      yAxis: { type:'value', show: false, scale: true },
+      xAxis: { type: 'value', show: false, scale: true },
+      yAxis: { type: 'value', show: false, scale: true },
       dataZoom: [
-        { type: 'inside', 
-          xAxisIndex: [0], 
+        {
+          type: 'inside',
+          xAxisIndex: [0],
           filterMode: 'empty',
           maxSpan: 100,
           minSpan: 12.5,
-          zoomOnMouseWheel: true, 
-          moveOnMouseMove: true,  
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
           moveOnMouseWheel: true,
-         },{ type: 'inside', 
+        }, {
+          type: 'inside',
           yAxisIndex: [0],
           filterMode: 'empty',
           maxspan: 100,
           minSpan: 12.5,
-          zoomOnMouseWheel: true, 
-          moveOnMouseMove: true,  
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
           moveOnMouseWheel: true,
-         },
+        },
       ],
       animation: false,
-      animationDuration:0,
+      animationDuration: 0,
       series: [
         {
           type: 'scatter',
           symbolSize: 8, // 점 크기 살짝 키움
-          
+
           // 데이터 연결
-          data: clusterData, 
+          data: clusterData,
 
           itemStyle: {
             // 클러스터 ID(3번째 값)에 따라 색상 자동 지정
@@ -273,10 +270,10 @@ export function Playlist() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 space-y-8">
-        
+
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
+
           {/* 1. Radar Chart */}
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
             <h2 className="text-2xl font-bold text-white mb-6">
@@ -326,21 +323,21 @@ export function Playlist() {
             <h2 className="text-2xl font-bold text-white mb-6">
               음악 클러스터 맵
             </h2>
-            
+
             {/* echart */}
             <div className="relative w-full flex-1 min-h-[400px] bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-white/10 overflow-hidden">
-               <ReactECharts
-                  option={getClusterChartOption()}
-                  style={{ height: '100%', width: '100%' }}
-                  onEvents={onChartEvent}
-                />
-                {/* 배경 라벨 */}
-                <div className="absolute bottom-3 right-4 text-xs font-medium text-white/30 pointer-events-none">
-                  Dim 1 →
-                </div>
-                <div className="absolute top-4 left-3 text-xs font-medium text-white/30 transform -rotate-90 origin-left pointer-events-none">
-                  ← Dim 2
-                </div>
+              <ReactECharts
+                option={getClusterChartOption()}
+                style={{ height: '100%', width: '100%' }}
+                onEvents={onChartEvent}
+              />
+              {/* 배경 라벨 */}
+              <div className="absolute bottom-3 right-4 text-xs font-medium text-white/30 pointer-events-none">
+                Dim 1 →
+              </div>
+              <div className="absolute top-4 left-3 text-xs font-medium text-white/30 transform -rotate-90 origin-left pointer-events-none">
+                ← Dim 2
+              </div>
             </div>
 
             {/* 범례 (Legend) */}
@@ -396,9 +393,8 @@ export function Playlist() {
             {playlistTracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${
-                  currentPlaying === track.id ? 'bg-white/10' : ''
-                }`}
+                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentPlaying === track.id ? 'bg-white/10' : ''
+                  }`}
                 onClick={() => playTrack(track.id)}
               >
                 <div className="text-white/40 w-8 text-center group-hover:hidden">
@@ -406,11 +402,10 @@ export function Playlist() {
                 </div>
                 <button className="hidden group-hover:block">
                   <Play
-                    className={`size-8 ${
-                      currentPlaying === track.id
-                        ? 'text-teal-400 fill-teal-400'
-                        : 'text-white'
-                    }`}
+                    className={`size-8 ${currentPlaying === track.id
+                      ? 'text-teal-400 fill-teal-400'
+                      : 'text-white'
+                      }`}
                   />
                 </button>
                 <img
@@ -437,7 +432,7 @@ export function Playlist() {
 
         {/* Reselect Button */}
         <div className="flex justify-center">
-          <button 
+          <button
             onClick={handleReselect}
             className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white px-12 py-5 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-3"
           >

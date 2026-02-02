@@ -1,36 +1,35 @@
 import { useState, useEffect } from 'react';
-import type { Track } from '../types/track';
 import { useNavigate } from 'react-router';
-import { Play, Check, ChevronLeft, ChevronRight } from 'lucide-react';
-
-// 가짜 데이터 (나중에 백엔드 데이터로 교체됨)
-const mockTracks: Track[] = [
-  { id: '1', title: 'Hype Boy', artist: 'NewJeans', album: 'New Jeans', duration: '3:20', imageUrl: 'https://placehold.co/400/4f46e5/ffffff?text=HypeBoy', genre: 'K-Pop', bpm: 130 },
-  { id: '2', title: 'Ditto', artist: 'NewJeans', album: 'OMG', duration: '3:05', imageUrl: 'https://placehold.co/400/ec4899/ffffff?text=Ditto', genre: 'K-Pop', bpm: 134 },
-  { id: '3', title: 'Seven', artist: 'Jung Kook', album: 'Golden', duration: '3:04', imageUrl: 'https://placehold.co/400/10b981/ffffff?text=Seven', genre: 'Pop', bpm: 125 },
-  { id: '4', title: 'I AM', artist: 'IVE', album: 'I\'ve IVE', duration: '3:00', imageUrl: 'https://placehold.co/400/f59e0b/ffffff?text=IAM', genre: 'K-Pop', bpm: 128 },
-  { id: '5', title: 'Super Shy', artist: 'NewJeans', album: 'Get Up', duration: '2:34', imageUrl: 'https://placehold.co/400/3b82f6/ffffff?text=SuperShy', genre: 'K-Pop', bpm: 150 },
-];
+import { Play, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useDataStore } from '../stores/useDataStore'; 
 
 const TRACKS_PER_PAGE = 10;
 
 export function Discover() {
   const navigate = useNavigate();
+  
+  // ⭐️ 스토어에서 데이터 가져오기
+  const { fetchRetrievals, retrievalTracks, isLoading, preferences } = useDataStore();
+
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-//   useEffect(() => {
-//     // Check if user has set preferences
-//     const preferences = localStorage.getItem('preferences');
-//     if (!preferences) {
-//       navigate('/preferences');
-//     }
-//   }, [navigate]);
-
-  const totalPages = Math.ceil(mockTracks.length / TRACKS_PER_PAGE);
+  useEffect(() => {
+      if (retrievalTracks.length === 0) {
+        // 스토어에 취향 정보가 있는지 확인
+        if (preferences) {
+          fetchRetrievals(preferences); // 바로 사용!
+        } else {
+          alert("취향 정보가 없습니다.");
+          navigate('/preferences');
+        }
+      }
+    }, [fetchRetrievals, retrievalTracks.length, navigate, preferences]);
+  // 페이지네이션 계산 (mockTracks -> tracks 로 변경)
+  const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;
   const endIndex = startIndex + TRACKS_PER_PAGE;
-  const currentTracks = mockTracks.slice(startIndex, endIndex);
+  const currentTracks = retrievalTracks.slice(startIndex, endIndex);
 
   const toggleTrackSelection = (trackId: string) => {
     setSelectedTracks((prev) =>
@@ -42,7 +41,7 @@ export function Discover() {
 
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
-      localStorage.setItem('selectedTracks', JSON.stringify(selectedTracks));
+      setSelectedTracks(selectedTracks); // 스토어에 선택된 트랙들 저장
       navigate('/playlist');
     }
   };
@@ -51,6 +50,16 @@ export function Discover() {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
+        <Loader2 className="size-10 animate-spin text-teal-500 mb-4" />
+        <p className="text-lg">당신의 취향을 분석하여 곡을 추천중입니다...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-teal-900">
@@ -61,7 +70,8 @@ export function Discover() {
             당신을 위한 추천 음악
           </h1>
           <p className="text-white/80 mb-4">
-            총 {mockTracks.length}개의 트랙 • 마음에 드는 곡을 선택하면 맞춤 플레이리스트를 만들어드립니다
+            {/* mockTracks.length -> tracks.length */}
+            총 {retrievalTracks.length}개의 트랙 • 마음에 드는 곡을 선택하면 맞춤 플레이리스트를 만들어드립니다
           </p>
           {selectedTracks.length > 0 && (
             <div className="bg-teal-500/20 backdrop-blur-sm rounded-xl p-4 border border-teal-400/30">
@@ -89,84 +99,90 @@ export function Discover() {
 
           {/* Track Rows */}
           <div className="divide-y divide-white/5">
-            {currentTracks.map((track, index) => {
-              const isSelected = selectedTracks.includes(track.id);
-              const globalIndex = startIndex + index + 1;
+            {currentTracks.length > 0 ? (
+              currentTracks.map((track, index) => {
+                const isSelected = selectedTracks.includes(track.id);
+                const globalIndex = startIndex + index + 1;
 
-              return (
-                <div
-                  key={track.id}
-                  onClick={() => toggleTrackSelection(track.id)}
-                  className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${
-                    isSelected ? 'bg-teal-500/20' : ''
-                  }`}
-                >
-                  {/* Index / Play Button */}
-                  <div className="col-span-12 md:col-span-1 flex md:justify-center items-center">
-                    <div className="relative flex items-center gap-3 md:block">
-                      {isSelected ? (
-                        <div className="bg-teal-400 rounded-md size-10 md:size-8 flex items-center justify-center">
-                          <Check className="size-5 md:size-4 text-slate-900" />
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-white/40 group-hover:hidden text-sm md:text-base w-10 md:w-8 text-center">
-                            {globalIndex}
-                          </span>
-                          <Play className="hidden group-hover:block text-white size-10 md:size-8 fill-white" />
-                        </>
-                      )}
+                return (
+                  <div
+                    key={track.id}
+                    onClick={() => toggleTrackSelection(track.id)}
+                    className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${
+                      isSelected ? 'bg-teal-500/20' : ''
+                    }`}
+                  >
+                    {/* Index / Play Button */}
+                    <div className="col-span-12 md:col-span-1 flex md:justify-center items-center">
+                      <div className="relative flex items-center gap-3 md:block">
+                        {isSelected ? (
+                          <div className="bg-teal-400 rounded-md size-10 md:size-8 flex items-center justify-center">
+                            <Check className="size-5 md:size-4 text-slate-900" />
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-white/40 group-hover:hidden text-sm md:text-base w-10 md:w-8 text-center">
+                              {globalIndex}
+                            </span>
+                            <Play className="hidden group-hover:block text-white size-10 md:size-8 fill-white" />
+                          </>
+                        )}
+                        <img
+                          src={track.imageUrl}
+                          alt={track.title}
+                          className="md:hidden size-12 rounded-lg object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Title & Artist */}
+                    <div className="col-span-12 md:col-span-5 flex items-center gap-4">
                       <img
                         src={track.imageUrl}
                         alt={track.title}
-                        className="md:hidden size-12 rounded-lg object-cover"
+                        className="hidden md:block size-12 rounded-lg object-cover"
                       />
-                    </div>
-                  </div>
-
-                  {/* Title & Artist */}
-                  <div className="col-span-12 md:col-span-5 flex items-center gap-4">
-                    <img
-                      src={track.imageUrl}
-                      alt={track.title}
-                      className="hidden md:block size-12 rounded-lg object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white truncate">
-                        {track.title}
-                      </div>
-                      <div className="text-sm text-white/60 truncate">
-                        {track.artist}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white truncate">
+                          {track.title}
+                        </div>
+                        <div className="text-sm text-white/60 truncate">
+                          {track.artist}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Album */}
-                  <div className="col-span-6 md:col-span-3 flex items-center">
-                    <span className="text-white/70 truncate text-sm md:text-base">
-                      {track.album}
-                    </span>
-                  </div>
+                    {/* Album */}
+                    <div className="col-span-6 md:col-span-3 flex items-center">
+                      <span className="text-white/70 truncate text-sm md:text-base">
+                        {track.album}
+                      </span>
+                    </div>
 
-                  {/* Genre */}
-                  <div className="col-span-6 md:col-span-1 flex items-center">
-                    <span className="text-white/70 text-sm md:text-base truncate">
-                      {track.genre}
-                    </span>
-                  </div>
+                    {/* Genre */}
+                    <div className="col-span-6 md:col-span-1 flex items-center">
+                      <span className="text-white/70 text-sm md:text-base truncate">
+                        {track.genre}
+                      </span>
+                    </div>
 
-                  {/* BPM - Hidden on mobile */}
-                  <div className="hidden md:flex col-span-1 items-center">
-                    <span className="text-white/70 text-sm">{track.bpm}</span>
-                  </div>
+                    {/* BPM - Hidden on mobile */}
+                    <div className="hidden md:flex col-span-1 items-center">
+                      <span className="text-white/70 text-sm">{track.bpm}</span>
+                    </div>
 
-                  {/* Duration */}
-                  <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
-                    <span className="text-white/40 text-sm">{track.duration}</span>
+                    {/* Duration */}
+                    <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
+                      <span className="text-white/40 text-sm">{track.duration}</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="p-10 text-center text-white/50">
+                표시할 추천 음악이 없습니다. 취향을 다시 선택해주세요.
+              </div>
+            )}
           </div>
         </div>
 

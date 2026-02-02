@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useDataStore } from '../stores/useDataStore';
 import { Zap, Heart, Music, Mic2, Volume2, Activity } from 'lucide-react';
 
 interface FeatureSlider {
@@ -71,6 +72,7 @@ const features: FeatureSlider[] = [
 
 export function Preferences() {
   const navigate = useNavigate();
+  const { isLoading, setPreferences } = useDataStore();
   const [featureValues, setFeatureValues] = useState<Record<string, number>>(
     features.reduce((acc, feature) => ({
       ...acc,
@@ -85,9 +87,17 @@ export function Preferences() {
     }));
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Store preferences in localStorage for mock data
-    localStorage.setItem('preferences', JSON.stringify(featureValues));
+    const payload = {
+      energy: featureValues['energy'],
+      valence: featureValues['valence'],
+      danceability: featureValues['danceability'],
+      acousticness: featureValues['acousticness'],
+      instrumentalness: featureValues['instrumentalness'],
+      tempo: featureValues['tempo'],
+    };
+    setPreferences(payload);
     navigate('/discover');
   };
 
@@ -197,9 +207,11 @@ export function Preferences() {
         {/* Continue Button */}
         <button
           onClick={handleContinue}
-          className="w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105"
+          disabled={isLoading} // 로딩 중이면 클릭 방지
+          className={`w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
         >
-          음악 추천 받기
+          {isLoading ? '분석 중...' : '음악 추천 받기'}
         </button>
       </div>
     </div>

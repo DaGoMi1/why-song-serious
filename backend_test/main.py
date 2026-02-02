@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import json
 import os
 
@@ -18,6 +19,14 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+class UserPreferences(BaseModel):
+    energy: int
+    valence: int
+    danceability: int
+    acousticness: int
+    instrumentalness: int
+    tempo: int
+  
 def load_json(filename):
     current_dir=os.path.dirname(os.path.abspath(__file__))
     file_path=os.path.join(current_dir, filename)
@@ -28,12 +37,21 @@ def load_json(filename):
 def read_root():
     return {"message": "Backend is Running"}
 
-@app.get("/api/tracks")
+@app.post("/api/recommend")
 def get_tracks():
-    data=load_json('tracks.json')
+    data=load_json('tracks_recommend.json')
     return data
 
 @app.get("/api/cluster")
 def get_cluster_data():
     data=load_json('clustered_data.json')
     return data
+
+@app.post("/api/retrieval")
+def recommend_tracks(preferences: UserPreferences):
+    print("Received preferences:", preferences)
+    data=load_json('tracks_retrieval.json')
+    
+    
+    recommended_tracks=data.copy()
+    return recommended_tracks[:10]  # Return top 10 recommendations
