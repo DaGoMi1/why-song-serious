@@ -24,8 +24,7 @@ async def search_tracks(
     취향 기반 트랙 검색
     
     1. 사용자 취향(preferences) 저장
-    2. DeepFM 임베딩 생성
-    3. 유사한 트랙 검색
+    2. 유사한 트랙 검색
     """
     # 취향 저장
     preference = await save_user_preference(db, user_id, request.preferences)
