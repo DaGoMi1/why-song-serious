@@ -7,7 +7,7 @@ from app.auth.service import create_guest_user, create_access_token, get_user_by
 from app.auth.schema import GuestLoginResponse, UserResponse
 from app.common.exceptions import NotFoundException
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/guest", response_model=GuestLoginResponse)
