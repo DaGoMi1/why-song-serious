@@ -37,7 +37,7 @@ const rgbToHex = (r: number, g: number, b: number) => {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
 
-// 4. 1~40번까지 색상 자동 생성 함수
+
 const generateGradientColors = (totalSteps: number) => {
   const colors: Record<number, { bg: string; border: string; name: string }> = {};
 
@@ -68,28 +68,32 @@ const generateGradientColors = (totalSteps: number) => {
   return colors;
 };
 
-// ⭐️ 최종 결과: 1~40번 색상이 생성됨
-const clusterColors = generateGradientColors(50);
+// 색상 자동 생성
+const clusterColors = generateGradientColors(600);
 
 export function Playlist() {
   const navigate = useNavigate();
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
 
-  const { recommendedTracks, clusterData, isLoading, fetchRecommendations, preferences, selectedTracks } = useDataStore();
+  const {
+    recommendedTracks,
+    clusterData,
+    fetchRecommendations,
+    preferences,
+    selectedTracks,
+    playlistExplanation
+  } = useDataStore();
 
   useEffect(() => {
-    if (recommendedTracks.length === 0) {
+    if (recommendedTracks.length === 0 || !playlistExplanation) {
       fetchRecommendations(preferences!, selectedTracks);
     }
-  }, [fetchRecommendations, recommendedTracks.length])
+  }, [fetchRecommendations, recommendedTracks.length, playlistExplanation])
 
   useEffect(() => {
     if (recommendedTracks.length === 0) return;
-
-    // 선택한 트랙들 로드
-    //const ids = selectedTracks;
-
+    // 추천된 트랙 로드
     setPlaylistTracks(recommendedTracks);
   }, [navigate, recommendedTracks]);
 
@@ -100,15 +104,39 @@ export function Playlist() {
   const handleReselect = () => {
     navigate('/preferences');
   };
+  console.log("track data:", playlistTracks);
+  // audio features 계산
+  const audioFeatures = useMemo(() => {
+    if (playlistTracks.length === 0) return [
+      { feature: 'Energy', value: 0 },
+      { feature: 'Dance', value: 0 },
+      { feature: 'Valence', value: 0 },
+      { feature: 'Acoustic', value: 0 },
+      { feature: 'Instrum.', value: 0 },
+    ];
 
-  const audioFeatures = [
-    { feature: 'Energy', value: 70 },
-    { feature: 'Danceability', value: 60 },
-    { feature: 'Valence', value: 80 },
-    { feature: 'Acousticness', value: 25 },
-    { feature: 'Instrumentalness', value: 15 },
-    { feature: 'Speechiness', value: 20 },
-  ];
+    // 트랙 feature들의 합, 평균 계산
+    const sum = playlistTracks.reduce((acc, track) => ({
+      energy: acc.energy + (track.energy || 0),
+      danceability: acc.danceability + (track.danceability || 0),
+      valence: acc.valence + (track.valence || 0),
+      acousticness: acc.acousticness + (track.acousticness || 0),
+      instrumentalness: acc.instrumentalness + (track.instrumentalness || 0),
+    }), { energy: 0, danceability: 0, valence: 0, acousticness: 0, instrumentalness: 0 });
+
+    const count = playlistTracks.length;
+    const avg = (val: number) => Math.round(val / count); // 정수로 반올림
+    console.log('Audio Feature Sums:', sum);
+    // 차트용 포맷으로 변환
+    return [
+      { feature: 'Energy', value: avg(sum.energy) },
+      { feature: 'Dance', value: avg(sum.danceability) },
+      { feature: 'Valence', value: avg(sum.valence) },
+      { feature: 'Acoustic', value: avg(sum.acousticness) },
+      { feature: 'Instrum.', value: avg(sum.instrumentalness) },
+    ];
+
+  }, [playlistTracks]);
 
   //zoom event
   const zoomLevelRef = useRef<number>(1)
@@ -130,6 +158,18 @@ export function Playlist() {
     }
   }
 
+  // echart용 데이터 포맷팅
+  const formattedClusterData = useMemo(() => {
+    if (!clusterData || !Array.isArray(clusterData)) return [];
+
+    return clusterData.map((item: any) => [
+      item.emb1,           
+      item.emb2,            
+      item.cluster_number,  
+      item.id               
+    ]);
+  }, [clusterData]);
+
   // 차트 옵션
   const getClusterChartOption = () => {
     return {
@@ -141,17 +181,17 @@ export function Playlist() {
         borderColor: '#555',
         textStyle: { color: '#fff' },
         formatter: (params: any) => {
-          // 파이썬은 0,1,2,3을 주지만, 프론트는 1,2,3,4를 사용하므로 +1
+
           // zoom level에 따라 툴팁 내용을 동적으로 변경
           const zoomLevel = zoomLevelRef
           const clusterIndex = params.data[2] + 1;
           const clusterInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
-
+          const trackId = params.data[3];
           // zoomLevel<3이면 클러스터 정보만 보여줌
           if (zoomLevel.current < 3) {
             return `
               <div style="font-weight: bold; margin-bottom: 4px; color: ${clusterInfo?.border || 'white'}">
-                ${clusterInfo?.name || 'Unknown Group'}
+                ${clusterIndex || 'Unknown Group'}
               </div>
               <div style="font-size: 11px; color: #ccc;">
                 확대해보세요
@@ -163,7 +203,7 @@ export function Playlist() {
                <div style="text-align: left;">
                 <div style="font-size: 10px; color: #aaa; margin-bottom: 2px;">Track Info</div>
                 <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">
-                  Track #${params.dataIndex}
+                  Track #${trackId}
                 </div>
                 <div style="color: ${clusterInfo?.border}; font-size: 11px;">
                   ${clusterInfo?.name}
@@ -184,7 +224,7 @@ export function Playlist() {
           minSpan: 12.5,
           zoomOnMouseWheel: true,
           moveOnMouseMove: true,
-          moveOnMouseWheel: true,
+          moveOnMouseWheel: false,
         }, {
           type: 'inside',
           yAxisIndex: [0],
@@ -204,12 +244,12 @@ export function Playlist() {
           symbolSize: 8, // 점 크기 살짝 키움
 
           // 데이터 연결
-          data: clusterData,
+          data: formattedClusterData,
 
           itemStyle: {
             // 클러스터 ID(3번째 값)에 따라 색상 자동 지정
             color: (params: any) => {
-              const clusterIndex = params.data[2] + 1; // 0->1, 1->2...
+              const clusterIndex = params.data[2] + 1;
               const colorInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
               return colorInfo?.border || '#ccc'; // 매칭 안되면 회색
             },
@@ -339,19 +379,6 @@ export function Playlist() {
                 ← Dim 2
               </div>
             </div>
-
-            {/* 범례 (Legend) */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {Object.entries(clusterColors).map(([clusterId, cluster]) => (
-                <div key={clusterId} className="flex items-center gap-2 text-sm">
-                  <div
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: cluster.border }}
-                  />
-                  <span className="text-white/70">{cluster.name}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
         </div>
@@ -359,30 +386,11 @@ export function Playlist() {
         {/* Additional Insights */}
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
           <h2 className="text-2xl font-bold text-white mb-4">
-            플레이리스트 인사이트
+            플레이리스트 설명
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-blue-500/20 to-teal-500/20 rounded-xl p-4">
-              <div className="text-blue-300 text-sm mb-2">주요 분위기</div>
-              <div className="text-white text-xl font-bold">에너제틱</div>
-              <p className="text-white/60 text-sm mt-2">
-                활기차고 역동적인 트랙이 많습니다
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-teal-500/20 to-cyan-500/20 rounded-xl p-4">
-              <div className="text-teal-300 text-sm mb-2">댄스 적합도</div>
-              <div className="text-white text-xl font-bold">70%</div>
-              <p className="text-white/60 text-sm mt-2">
-                춤추기 좋은 곡들로 구성되어 있습니다
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl p-4">
-              <div className="text-cyan-300 text-sm mb-2">긍정도</div>
-              <div className="text-white text-xl font-bold">75%</div>
-              <p className="text-white/60 text-sm mt-2">
-                밝고 긍정적인 느낌의 플레이리스트입니다
-              </p>
-            </div>
+          <div className="bg-gradient-to-br from-blue-500/20 to-teal-500/20 rounded-xl p-4">
+            <div className="text-white text-xl font-bold">{playlistExplanation?.name || "분석 중..."}</div>
+            <p className="text-white/60 text-sm mt-2">{playlistExplanation?.description || "데이터를 불러오는 중입니다."}</p>
           </div>
         </div>
 

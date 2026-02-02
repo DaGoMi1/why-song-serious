@@ -12,6 +12,11 @@ interface Preferences {
 }
 
 // 2. 인터페이스
+interface PlaylistExplanation {
+    name: string;
+    description: string;
+}
+
 interface DataState {
     preferences: Preferences | null;
     setPreferences: (prefs: Preferences) => void; // preferences 저장
@@ -21,6 +26,7 @@ interface DataState {
 
     retrievalTracks: any[];
     recommendedTracks: any[];
+    playlistExplanation: PlaylistExplanation | null;
     clusterData: any[];
     isLoading: boolean;
     error: string | null;
@@ -38,6 +44,7 @@ export const useDataStore = create<DataState>()(
             selectedTracks: [],
             retrievalTracks: [],
             recommendedTracks: [],
+            playlistExplanation: null,
             clusterData: [],
             isLoading: false,
             error: null,
@@ -57,7 +64,11 @@ export const useDataStore = create<DataState>()(
                         body: JSON.stringify(prefs),
                     });
                     const data = await res.json();
-                    set({ retrievalTracks: data, isLoading: false });
+
+                    set({ 
+                        retrievalTracks: data.tracks,
+                        isLoading: false 
+                    });
                 } catch (err) {
                     set({ error: "데이터 로딩 실패", isLoading: false });
                 }
@@ -74,12 +85,16 @@ export const useDataStore = create<DataState>()(
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
                     });
-                    const recommendedTracks = await res.json();
+                    const data = await res.json();
 
                     const clusterRes = await fetch('http://localhost:8000/api/cluster');
                     const clusterData = await clusterRes.json();
-
-                    set({ recommendedTracks, clusterData, isLoading: false });
+                    console.log("Received data:", data);
+                    set({ 
+                        recommendedTracks: data.tracks, 
+                        clusterData, 
+                        playlistExplanation: data.explanation,
+                        isLoading: false });
                 } catch (err) {
                     set({ error: "추천 결과 로딩 실패", isLoading: false });
                 }

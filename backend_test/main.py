@@ -40,7 +40,8 @@ def read_root():
 @app.post("/api/recommend")
 def get_tracks():
     data=load_json('tracks_recommend.json')
-    return data
+    explanation_data = load_json('playlist_explanation.json')
+    return {"tracks": data, "explanation": explanation_data}
 
 @app.get("/api/cluster")
 def get_cluster_data():
@@ -51,7 +52,6 @@ def get_cluster_data():
 def recommend_tracks(preferences: UserPreferences):
     print("Received preferences:", preferences)
     data=load_json('tracks_retrieval.json')
-    
     
     recommended_tracks=data.copy()
     return recommended_tracks[:10]  # Return top 10 recommendations
