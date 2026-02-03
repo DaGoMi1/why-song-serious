@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, Field, field_validator
+import json
 
 class TrackSearchRequest(BaseModel):
     """취향 기반 트랙 검색 요청"""
@@ -26,6 +26,14 @@ class TrackResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @field_validator("audio_features", mode="before")
+    @classmethod
+    def parse_audio_features(cls, v):
+        # pgvector가 str로 넘어오는 경우 list로 변환
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
 
 class TrackSearchResponse(BaseModel):

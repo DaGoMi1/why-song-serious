@@ -13,7 +13,7 @@ class Track(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     spotify_track_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(500), nullable=False)
-    artist: Mapped[str] = mapped_column(String(500), nullable=False)
+    artist: Mapped[str] = mapped_column(String, nullable=False)
     album: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     popularity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
