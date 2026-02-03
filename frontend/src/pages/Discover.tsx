@@ -1,31 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Play, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useDataStore } from '../stores/useDataStore'; 
+import { useDataStore } from '../stores/useDataStore';
 
 const TRACKS_PER_PAGE = 10;
 
 export function Discover() {
   const navigate = useNavigate();
-  
+
   // store서 데이터 가져옴
-  const { fetchRetrievals, retrievalTracks, isLoading, preferences } = useDataStore();
+  const { fetchRetrievals, retrievalTracks = [], isLoading, preferences } = useDataStore();
 
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-      if (retrievalTracks.length === 0) {
-        // 스토어에 preference가 있는지 확인
-        if (preferences) {
-          fetchRetrievals(preferences);
-        } else {
-          alert("preferences 정보가 없습니다.");
-          navigate('/preferences');
-        }
-      }
-    }, [fetchRetrievals, retrievalTracks.length, navigate, preferences]);
- 
+    if (preferences) {
+      // console.log("retriaval start")
+      fetchRetrievals(preferences);
+    } else {
+      console.log("no preferences")
+      alert("preferences 정보가 없습니다.");
+      navigate('/preferences');
+    }
+  }, [navigate, preferences]);
+
   const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;
   const endIndex = startIndex + TRACKS_PER_PAGE;
@@ -42,7 +41,7 @@ export function Discover() {
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
       // store에 선택된 트랙들 저장
-      setSelectedTracks(selectedTracks); 
+      setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
   };
@@ -77,7 +76,7 @@ export function Discover() {
           {selectedTracks.length > 0 && (
             <div className="bg-teal-500/20 backdrop-blur-sm rounded-xl p-4 border border-teal-400/30">
               <p className="text-teal-200">
-                <span className="font-bold text-teal-100">{selectedTracks.length}개의 곡</span>이 선택되었습니다. 
+                <span className="font-bold text-teal-100">{selectedTracks.length}개의 곡</span>이 선택되었습니다.
                 여러 곡을 선택하여 더 풍부한 플레이리스트를 만들어보세요!
               </p>
             </div>
@@ -109,9 +108,8 @@ export function Discover() {
                   <div
                     key={track.id}
                     onClick={() => toggleTrackSelection(track.id)}
-                    className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${
-                      isSelected ? 'bg-teal-500/20' : ''
-                    }`}
+                    className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${isSelected ? 'bg-teal-500/20' : ''
+                      }`}
                   >
                     {/* Index / Play Button */}
                     <div className="col-span-12 md:col-span-1 flex md:justify-center items-center">
@@ -161,15 +159,15 @@ export function Discover() {
                     </div>
 
                     {/* Genre */}
-                    <div className="col-span-6 md:col-span-1 flex items-center">
+                    {/* <div className="col-span-6 md:col-span-1 flex items-center">
                       <span className="text-white/70 text-sm md:text-base truncate">
                         {track.genre}
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* BPM - Hidden on mobile */}
                     <div className="hidden md:flex col-span-1 items-center">
-                      <span className="text-white/70 text-sm">{track.bpm}</span>
+                      <span className="text-white/70 text-sm">{track.tempo}</span>
                     </div>
 
                     {/* Duration */}
@@ -193,11 +191,10 @@ export function Discover() {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                currentPage === 1
+              className={`p-2 rounded-lg transition-all duration-200 ${currentPage === 1
                   ? 'text-white/20 cursor-not-allowed'
                   : 'text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               <ChevronLeft className="size-6" />
             </button>
@@ -206,11 +203,10 @@ export function Discover() {
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`size-10 rounded-lg transition-all duration-200 ${
-                  currentPage === page
+                className={`size-10 rounded-lg transition-all duration-200 ${currentPage === page
                     ? 'bg-gradient-to-br from-blue-500 to-teal-500 text-white'
                     : 'text-white/60 hover:bg-white/10 hover:text-white'
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -219,11 +215,10 @@ export function Discover() {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                currentPage === totalPages
+              className={`p-2 rounded-lg transition-all duration-200 ${currentPage === totalPages
                   ? 'text-white/20 cursor-not-allowed'
                   : 'text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               <ChevronRight className="size-6" />
             </button>

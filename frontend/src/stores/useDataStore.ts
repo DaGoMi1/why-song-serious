@@ -62,9 +62,9 @@ export const useDataStore = create<DataState>()(
                         body: JSON.stringify(prefs),
                     });
                     const data = await res.json();
-
+                    // console.log("retrieval: ",data)
                     set({ 
-                        retrievalTracks: data.tracks,
+                        retrievalTracks: data,
                         isLoading: false 
                     });
                 } catch (err) {
@@ -87,7 +87,7 @@ export const useDataStore = create<DataState>()(
 
                     const clusterRes = await fetch('http://localhost:8000/api/cluster');
                     const clusterData = await clusterRes.json();
-                    console.log("Received data:", data);
+                    // console.log("Received data:", data);
                     set({ 
                         recommendedTracks: data.tracks, 
                         clusterData, 

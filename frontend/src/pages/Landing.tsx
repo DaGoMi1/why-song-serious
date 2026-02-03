@@ -63,7 +63,7 @@ export function Landing() {
                       AI 기반 취향 분석
                     </h3>
                     <p className="text-white/70">
-                      선호하는 장르와 분위기를 선택하면 AI가 당신의 취향을 분석하여
+                      선호하는 분위기를 선택하면 AI가 당신의 취향을 분석하여
                       최적의 음악을 추천합니다.
                     </p>
                   </div>

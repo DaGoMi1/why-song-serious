@@ -1,7 +1,82 @@
 [
-  { "id": "1", "title": "retrieval1", "artist": "retrieval1", "album": "retrieval1", "duration": "3:20", "imageUrl": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy", "genre": "K-Pop", "bpm": 130 },
-  { "id": "2", "title": "retrieval2", "artist": "retrieval2", "album": "retrieval2", "duration": "3:05", "imageUrl": "https://placehold.co/400/ec4899/ffffff?text=Ditto", "genre": "K-Pop", "bpm": 134 },
-  { "id": "3", "title": "retrieval3", "artist": "retrieval3", "album": "retrieval3", "duration": "3:04", "imageUrl": "https://placehold.co/400/10b981/ffffff?text=Seven", "genre": "Pop", "bpm": 125 },
-  { "id": "4", "title": "retrieval4", "artist": "retrieval4", "album": "retrieval4", "duration": "3:00", "imageUrl": "https://placehold.co/400/f59e0b/ffffff?text=IAM", "genre": "K-Pop", "bpm": 128 },
-  { "id": "5", "title": "retrieval5", "artist": "retrieval5", "album": "retrieval5", 	"duration": "3:00",	"imageUrl":"https://placehold.co/400/3b82f6/ffffff?text=SuperShy","genre":"K-Pop","bpm":"150"}
+  {
+    "id": "1",
+    "title": "retrieval1",
+    "artist": "retrieval1",
+    "album": "retrieval1",
+    "duration": "3:20",
+    "imageUrl": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy",
+    "features": {
+      "tempo": 130,
+      "energy": 85,
+      "danceability": 90,
+      "valence": 80,
+      "acousticness": 10,
+      "loudness": -10
+    }
+  },
+  {
+    "id": "2",
+    "title": "retrieval2",
+    "artist": "retrieval2",
+    "album": "retrieval2",
+    "duration": "3:05",
+    "imageUrl": "https://placehold.co/400/ec4899/ffffff?text=Ditto",
+    "features": {
+      "tempo": 134,
+      "energy": 60,
+      "danceability": 70,
+      "valence": 50,
+      "acousticness": 40,
+      "loudness": -5.883
+    }
+  },
+  {
+    "id": "3",
+    "title": "retrieval3",
+    "artist": "retrieval3",
+    "album": "retrieval3",
+    "duration": "3:04",
+    "imageUrl": "https://placehold.co/400/10b981/ffffff?text=Seven",
+    "features": {
+      "tempo": 125,
+      "energy": 75,
+      "danceability": 80,
+      "valence": 85,
+      "acousticness": 20,
+      "loudness": -2
+    }
+  },
+  {
+    "id": "4",
+    "title": "retrieval4",
+    "artist": "retrieval4",
+    "album": "retrieval4",
+    "duration": "3:00",
+    "imageUrl": "https://placehold.co/400/f59e0b/ffffff?text=IAM",
+    "features":{
+      "tempo": 128,
+      "energy": 90,
+      "danceability": 85,
+      "valence": 70,
+      "acousticness": 5,
+      "loudness": -15
+    }
+  },
+  {
+    "id": "5",
+    "title": "retrieval5",
+    "artist": "retrieval5",
+    "album": "retrieval5",
+    "duration": "2:34",
+    "imageUrl": "https://placehold.co/400/3b82f6/ffffff?text=SuperShy",
+    "features": {
+      "tempo": 150,
+      "energy": 95,
+      "danceability": 92,
+      "valence": 90,
+      "acousticness": 10,
+      "loudness": -20
+    }
+  }
 ]

@@ -72,7 +72,7 @@ const features: FeatureSlider[] = [
 
 export function Preferences() {
   const navigate = useNavigate();
-  const { isLoading, setPreferences } = useDataStore();
+  const { setPreferences } = useDataStore();
   const [featureValues, setFeatureValues] = useState<Record<string, number>>(
     features.reduce((acc, feature) => ({
       ...acc,
@@ -208,11 +208,11 @@ export function Preferences() {
         {/* Continue Button */}
         <button
           onClick={handleContinue}
-          disabled={isLoading} // 로딩 중이면 클릭 방지
-          className={`w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+
+          className={`w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 : ''
             }`}
         >
-          {isLoading ? '분석 중...' : '음악 추천 받기'}
+          {'음악 추천 받기'}
         </button>
       </div>
     </div>

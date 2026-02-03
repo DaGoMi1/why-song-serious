@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
-import { Play, Heart, Share2, Download, Music, RefreshCw } from 'lucide-react';
+import { Play, Share2, Download, Music, RefreshCw, Loader2 } from 'lucide-react';
 import {
   RadarChart,
   PolarGrid,
@@ -80,7 +80,8 @@ export function Playlist() {
     fetchRecommendations,
     preferences,
     selectedTracks,
-    playlistExplanation
+    playlistExplanation,
+    isLoading
   } = useDataStore();
 
   useEffect(() => {
@@ -102,7 +103,7 @@ export function Playlist() {
   const handleReselect = () => {
     navigate('/preferences');
   };
-  console.log("track data:", playlistTracks);
+  // console.log("track data:", playlistTracks);
 
   // audio features 계산
   const audioFeatures = useMemo(() => {
@@ -117,17 +118,35 @@ export function Playlist() {
 
     // 트랙 feature들의 합, 평균 계산
     const sum = playlistTracks.reduce((acc, track) => ({
-      energy: acc.energy + (track.features.energy || 0),
-      danceability: acc.danceability + (track.features.danceability || 0),
-      valence: acc.valence + (track.features.valence || 0),
-      acousticness: acc.acousticness + (track.features.acousticness || 0),
-      loudness: acc.loudness + (track.features.loudness || 0),
-      tempo: acc.tempo + (track.features.tempo || 0)
-    }), { energy: 0, danceability: 0, valence: 0, acousticness: 0, loudness: 0, tempo: 0 });
+      energy: acc.energy + (track.features?.energy || 0),
+      danceability: acc.danceability + (track.features?.danceability || 0),
+      valence: acc.valence + (track.features?.valence || 0),
+      acousticness: acc.acousticness + (track.features?.acousticness || 0),
+      loudness: acc.loudness + (track.features?.loudness || 0),
+      tempo: acc.tempo + (track.features?.tempo || 0)
+    }), { 
+      energy: 0, 
+      danceability: 0, 
+      valence: 0, 
+      acousticness: 0, 
+      loudness: 0, 
+      tempo: 0 
+    });
 
+    // loudness 정규화
+    const normalizeLoudness = (avgLoudness: number) => {
+      const avgDb = avgLoudness; 
+      const normalized = ((avgDb + 60) / 60) * 100;
+      return Math.min(100, Math.max(0, Math.round(normalized)));
+    };
+
+    // tempo 정규화(0-200으로 가정)
+    const normalizeTempo = (avgTempo: number) => {
+      return Math.min(100, Math.round((avgTempo / 200) * 100));
+    };
     const count = playlistTracks.length;
     const avg = (val: number) => Math.round(val / count);
-    console.log('Audio Feature Sums:', sum);
+    // console.log('Audio Feature Sums:', sum);
 
     // 차트용 포맷으로 변환
     return [
@@ -135,8 +154,8 @@ export function Playlist() {
       { feature: 'Dance', value: avg(sum.danceability) },
       { feature: 'Valence', value: avg(sum.valence) },
       { feature: 'Acoustic', value: avg(sum.acousticness) },
-      { feature: 'loudness', value: avg(sum.loudness) },
-      { feature: 'tempo', value: avg(sum.tempo) }
+      { feature: 'loudness', value: normalizeLoudness(avg(sum.loudness)) },
+      { feature: 'tempo', value: normalizeTempo(avg(sum.tempo)) }
     ];
 
   }, [playlistTracks]);
@@ -161,19 +180,38 @@ export function Playlist() {
     }
   }
 
-  // echart용 데이터 포맷팅
+// echart용 데이터 포맷팅 및 거리 정규화
   const formattedClusterData = useMemo(() => {
-    if (!clusterData || !Array.isArray(clusterData)) return [];
+    if (!clusterData || !Array.isArray(clusterData) || clusterData.length === 0) return [];
 
-    return clusterData.map((item: any) => [
-      item.emb1,           
-      item.emb2,            
-      item.cluster_number,  
-      item.id               
-    ]);
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    clusterData.forEach((item: any) => {
+      if (item.emb1 < minX) minX = item.emb1;
+      if (item.emb1 > maxX) maxX = item.emb1;
+      if (item.emb2 < minY) minY = item.emb2;
+      if (item.emb2 > maxY) maxY = item.emb2;
+    });
+
+    // 분모가 0이 되지 않도록 함
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+
+    return clusterData.map((item: any) => {
+      const normalizedX = 5 + ((item.emb1 - minX) / rangeX) * 90;
+      const normalizedY = 5 + ((item.emb2 - minY) / rangeY) * 90;
+
+      return [
+        normalizedX,
+        normalizedY,
+        item.cluster_number,
+        item.id
+      ];
+    });
   }, [clusterData]);
 
-  // 차트 옵션
+  // echart
   const getClusterChartOption = () => {
     return {
       backgroundColor: 'transparent',
@@ -202,7 +240,7 @@ export function Playlist() {
               </div>
             `;
           } else {
-            //zoomLevel>=3이면 개별 곡 정보를 보여줌
+            // zoomLevel>=3이면 개별 곡 정보를 보여줌
             return `
                <div style="text-align: left;">
                 <div style="font-size: 10px; color: #aaa; margin-bottom: 2px;">Track Info</div>
@@ -245,7 +283,7 @@ export function Playlist() {
       series: [
         {
           type: 'scatter',
-          symbolSize: 8, 
+          symbolSize: 3, 
 
           // 데이터 연결
           data: formattedClusterData,
@@ -258,8 +296,6 @@ export function Playlist() {
               return colorInfo?.border || '#ccc'; // 매칭 안되면 회색
             },
             opacity: 0.8,
-            borderColor: 'rgba(255,255,255,0.8)',
-            borderWidth: 1,
             shadowBlur: 10,
             shadowColor: 'rgba(0,0,0,0.3)'
           },
@@ -274,6 +310,15 @@ export function Playlist() {
       ]
     };
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
+        <Loader2 className="size-10 animate-spin text-teal-500 mb-4" />
+        <p className="text-lg">당신의 취향을 분석하여 곡을 추천중입니다...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-teal-900">
@@ -297,9 +342,6 @@ export function Playlist() {
                 <button className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2">
                   <Play className="size-5 fill-white" />
                   재생
-                </button>
-                <button className="bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
-                  <Heart className="size-5" />
                 </button>
                 <button className="bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
                   <Share2 className="size-5" />
