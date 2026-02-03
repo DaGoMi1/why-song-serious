@@ -111,17 +111,19 @@ export function Playlist() {
       { feature: 'Dance', value: 0 },
       { feature: 'Valence', value: 0 },
       { feature: 'Acoustic', value: 0 },
-      { feature: 'Instrum.', value: 0 },
+      { feature: 'Loudness', value: 0 },
+      { feature: 'Tempo', value: 0 },
     ];
 
     // 트랙 feature들의 합, 평균 계산
     const sum = playlistTracks.reduce((acc, track) => ({
-      energy: acc.energy + (track.energy || 0),
-      danceability: acc.danceability + (track.danceability || 0),
-      valence: acc.valence + (track.valence || 0),
-      acousticness: acc.acousticness + (track.acousticness || 0),
-      instrumentalness: acc.instrumentalness + (track.instrumentalness || 0),
-    }), { energy: 0, danceability: 0, valence: 0, acousticness: 0, instrumentalness: 0 });
+      energy: acc.energy + (track.features.energy || 0),
+      danceability: acc.danceability + (track.features.danceability || 0),
+      valence: acc.valence + (track.features.valence || 0),
+      acousticness: acc.acousticness + (track.features.acousticness || 0),
+      loudness: acc.loudness + (track.features.loudness || 0),
+      tempo: acc.tempo + (track.features.tempo || 0)
+    }), { energy: 0, danceability: 0, valence: 0, acousticness: 0, loudness: 0, tempo: 0 });
 
     const count = playlistTracks.length;
     const avg = (val: number) => Math.round(val / count);
@@ -133,7 +135,8 @@ export function Playlist() {
       { feature: 'Dance', value: avg(sum.danceability) },
       { feature: 'Valence', value: avg(sum.valence) },
       { feature: 'Acoustic', value: avg(sum.acousticness) },
-      { feature: 'Instrum.', value: avg(sum.instrumentalness) },
+      { feature: 'loudness', value: avg(sum.loudness) },
+      { feature: 'tempo', value: avg(sum.tempo) }
     ];
 
   }, [playlistTracks]);

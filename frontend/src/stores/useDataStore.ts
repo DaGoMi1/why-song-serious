@@ -6,7 +6,7 @@ interface Preferences {
     valence: number;
     danceability: number;
     acousticness: number;
-    instrumentalness: number;
+    loudness: number;
     tempo: number;
 }
 

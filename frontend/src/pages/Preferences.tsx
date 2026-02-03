@@ -51,13 +51,13 @@ const features: FeatureSlider[] = [
     defaultValue: 50,
   },
   {
-    id: 'instrumentalness',
-    name: '인스트루멘탈',
+    id: 'loudness',
+    name: '사운드 크기',
     icon: Volume2,
-    description: '보컬 없이 연주만 있는 정도',
-    min: 0,
-    max: 100,
-    defaultValue: 30,
+    description: '음악 볼륨',
+    min: -60,
+    max: 0,
+    defaultValue: -30,
   },
   {
     id: 'tempo',
@@ -95,7 +95,7 @@ export function Preferences() {
       valence: featureValues['valence'],
       danceability: featureValues['danceability'],
       acousticness: featureValues['acousticness'],
-      instrumentalness: featureValues['instrumentalness'],
+      loudness: featureValues['loudness'],
       tempo: featureValues['tempo'],
     };
     setPreferences(payload);

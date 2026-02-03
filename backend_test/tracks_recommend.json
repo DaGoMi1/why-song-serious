@@ -12,7 +12,7 @@
     "danceability": 90,
     "valence": 80,
     "acousticness": 10,
-    "instrumentalness": 0
+    "loudness": -10
   },
   {
     "id": "2",
@@ -27,7 +27,7 @@
     "danceability": 70,
     "valence": 50,
     "acousticness": 40,
-    "instrumentalness": 0
+    "loudness": -5.883
   },
   {
     "id": "3",
@@ -42,7 +42,7 @@
     "danceability": 80,
     "valence": 85,
     "acousticness": 20,
-    "instrumentalness": 5
+    "loudness": -2
   },
   {
     "id": "4",
@@ -57,7 +57,7 @@
     "danceability": 85,
     "valence": 70,
     "acousticness": 5,
-    "instrumentalness": 0
+    "loudness": -15
   },
   {
     "id": "5",
@@ -72,6 +72,6 @@
     "danceability": 92,
     "valence": 90,
     "acousticness": 10,
-    "instrumentalness": 0
+    "loudness": 0
   }
 ]

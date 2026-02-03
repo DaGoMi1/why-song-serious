@@ -1,15 +1,19 @@
+export interface AudioFeatures {
+  tempo: number;
+  energy: number;
+  danceability: number;
+  valence: number;
+  acousticness: number;
+  loudness: number;
+}
+
 export interface Track {
   id: string;
   title: string;
   artist: string;
   album: string;
   duration: string;
+  popularity: number;
   imageUrl: string;
-  genre: string;
-  bpm: number;
-  energy?: number;           
-  danceability?: number;
-  valence?: number;
-  acousticness?: number;
-  instrumentalness?: number;
+  features: AudioFeatures;
 }

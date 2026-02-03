@@ -24,7 +24,7 @@ class UserPreferences(BaseModel):
     valence: int
     danceability: int
     acousticness: int
-    instrumentalness: int
+    loudness: int
     tempo: int
   
 def load_json(filename):
