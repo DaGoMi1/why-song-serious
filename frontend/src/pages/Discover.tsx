@@ -16,7 +16,7 @@ export function Discover() {
 
   useEffect(() => {
     if (preferences) {
-      // console.log("retriaval start")
+      console.log("retriaval start")
       fetchRetrievals(preferences);
     } else {
       console.log("no preferences")
@@ -25,6 +25,7 @@ export function Discover() {
     }
   }, [navigate, preferences]);
 
+  // 페이지네이션
   const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;
   const endIndex = startIndex + TRACKS_PER_PAGE;
@@ -51,7 +52,7 @@ export function Discover() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 로딩 중
+  // 로딩 중 화면
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
@@ -158,14 +159,7 @@ export function Discover() {
                       </span>
                     </div>
 
-                    {/* Genre */}
-                    {/* <div className="col-span-6 md:col-span-1 flex items-center">
-                      <span className="text-white/70 text-sm md:text-base truncate">
-                        {track.genre}
-                      </span>
-                    </div> */}
-
-                    {/* BPM - Hidden on mobile */}
+                    {/* Tempo */}
                     <div className="hidden md:flex col-span-1 items-center">
                       <span className="text-white/70 text-sm">{track.tempo}</span>
                     </div>

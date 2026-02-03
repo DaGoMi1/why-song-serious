@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
-import { Play, Share2, Download, Music, RefreshCw, Loader2 } from 'lucide-react';
+import { Play, Share2, Download, Music, RefreshCw, Loader2, SkipBack, SkipForward, X, Pause } from 'lucide-react';
 import {
   RadarChart,
   PolarGrid,
@@ -35,15 +35,15 @@ const rgbToHex = (r: number, g: number, b: number) => {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
 
-
+// 자동으로 색상 생성
 const generateGradientColors = (totalSteps: number) => {
   const colors: Record<number, { bg: string; border: string; name: string }> = {};
 
   for (let i = 0; i < totalSteps; i++) {
-    // 현재 단계가 전체 중 어디쯤인지 비율 계산 (0 ~ 1)
+    // 현재 단계의 위치 계산
     const distinctRatio = i / (totalSteps - 1);
 
-    // 전체 비율을 3개의 구간(파랑-빨강, 빨강-보라, 보라-청록)으로 나눔
+    // 전체 비율을 3개의 구간으로 나눔
     const segment = Math.min(Math.floor(distinctRatio * (baseColors.length - 1)), baseColors.length - 2);
     const segmentRatio = (distinctRatio * (baseColors.length - 1)) - segment;
 
@@ -66,14 +66,14 @@ const generateGradientColors = (totalSteps: number) => {
   return colors;
 };
 
-// 색상 자동 생성
 const clusterColors = generateGradientColors(600);
 
 export function Playlist() {
   const navigate = useNavigate();
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
-  const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
 
+  // 임베딩 위젯에서 음악을 재생하기 위해 인덱스 관리
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
   const {
     recommendedTracks,
     clusterData,
@@ -81,10 +81,12 @@ export function Playlist() {
     preferences,
     selectedTracks,
     playlistExplanation,
-    isLoading
+    isLoading,
+    reset
   } = useDataStore();
 
   useEffect(() => {
+    // 추천 트랙이 없으면 받아옴
     if (recommendedTracks.length === 0 || !playlistExplanation) {
       fetchRecommendations(preferences!, selectedTracks);
     }
@@ -96,14 +98,53 @@ export function Playlist() {
     setPlaylistTracks(recommendedTracks);
   }, [navigate, recommendedTracks]);
 
-  const playTrack = (trackId: string) => {
-    setCurrentPlaying(currentPlaying === trackId ? null : trackId);
+  // 개별 곡 클릭
+  const playTrack = (index: number) => {
+    if (currentTrackIndex === index) {
+      setCurrentTrackIndex(null); // 같은 곡 누르면 닫기
+    } else {
+      setCurrentTrackIndex(index); // 해당 인덱스 재생
+    }
   };
 
-  const handleReselect = () => {
-    navigate('/preferences');
+  // 전체 재생 버튼 클릭
+  const handlePlayAll = () => {
+    if (playlistTracks.length > 0) {
+      if (currentTrackIndex !== null) {
+        // 이미 재생 중이면 정지
+        setCurrentTrackIndex(null);
+      } else {
+        // 아니면 0번부터 시작
+        setCurrentTrackIndex(0);
+      }
+    }
   };
-  // console.log("track data:", playlistTracks);
+
+  // 다음 곡 핸들러
+  const handleNext = () => {
+    if (currentTrackIndex !== null && currentTrackIndex < playlistTracks.length - 1) {
+      setCurrentTrackIndex(currentTrackIndex + 1);
+    }
+  };
+
+  // 이전 곡 핸들러
+  const handlePrev = () => {
+    if (currentTrackIndex !== null && currentTrackIndex > 0) {
+      setCurrentTrackIndex(currentTrackIndex - 1);
+    }
+  };
+
+  // 현재 재생중인 트랙
+  const currentTrackId = currentTrackIndex !== null ? playlistTracks[currentTrackIndex]?.id : null;
+
+  const handleReselect = () => {
+    if (window.confirm("현재 추천 목록이 사라집니다. 취향을 다시 선택하시겠습니까?")) {
+
+      // 스토어 상태 초기화 
+      reset();
+      navigate('/preferences');
+    }
+  };
 
   // audio features 계산
   const audioFeatures = useMemo(() => {
@@ -124,18 +165,18 @@ export function Playlist() {
       acousticness: acc.acousticness + (track.features?.acousticness || 0),
       loudness: acc.loudness + (track.features?.loudness || 0),
       tempo: acc.tempo + (track.features?.tempo || 0)
-    }), { 
-      energy: 0, 
-      danceability: 0, 
-      valence: 0, 
-      acousticness: 0, 
-      loudness: 0, 
-      tempo: 0 
+    }), {
+      energy: 0,
+      danceability: 0,
+      valence: 0,
+      acousticness: 0,
+      loudness: 0,
+      tempo: 0
     });
 
     // loudness 정규화
     const normalizeLoudness = (avgLoudness: number) => {
-      const avgDb = avgLoudness; 
+      const avgDb = avgLoudness;
       const normalized = ((avgDb + 60) / 60) * 100;
       return Math.min(100, Math.max(0, Math.round(normalized)));
     };
@@ -180,7 +221,7 @@ export function Playlist() {
     }
   }
 
-// echart용 데이터 포맷팅 및 거리 정규화
+  // echart용 데이터 포맷팅 및 거리 정규화
   const formattedClusterData = useMemo(() => {
     if (!clusterData || !Array.isArray(clusterData) || clusterData.length === 0) return [];
 
@@ -283,13 +324,13 @@ export function Playlist() {
       series: [
         {
           type: 'scatter',
-          symbolSize: 3, 
+          symbolSize: 3,
 
           // 데이터 연결
           data: formattedClusterData,
 
           itemStyle: {
-            // 클러스터 ID(3번째 값)에 따라 색상 자동 지정
+            // 클러스터 ID에 따라 색상 자동 지정
             color: (params: any) => {
               const clusterIndex = params.data[2] + 1;
               const colorInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
@@ -311,6 +352,7 @@ export function Playlist() {
     };
   };
 
+  // 로딩 화면
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
@@ -339,9 +381,19 @@ export function Playlist() {
                 {playlistTracks.length}개 트랙 • 당신의 취향 기반 추천
               </p>
               <div className="flex gap-3">
-                <button className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2">
-                  <Play className="size-5 fill-white" />
-                  재생
+                <button 
+                  onClick={handlePlayAll}
+                  className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                >
+                  {currentTrackIndex !== null ? (
+                    <>
+                      <Pause className="size-5 fill-white" /> 재생 중지
+                    </>
+                  ) : (
+                    <>
+                      <Play className="size-5 fill-white" /> 재생
+                    </>
+                  )}
                 </button>
                 <button className="bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
                   <Share2 className="size-5" />
@@ -447,16 +499,16 @@ export function Playlist() {
             {playlistTracks.map((track, index) => (
               <div
                 key={track.id}
-                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentPlaying === track.id ? 'bg-white/10' : ''
+                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentTrackIndex === index ? 'bg-white/10' : ''
                   }`}
-                onClick={() => playTrack(track.id)}
+                onClick={() => playTrack(index)}
               >
                 <div className="text-white/40 w-8 text-center group-hover:hidden">
                   {index + 1}
                 </div>
                 <button className="hidden group-hover:block">
                   <Play
-                    className={`size-8 ${currentPlaying === track.id
+                    className={`size-8 ${currentTrackIndex === index
                       ? 'text-teal-400 fill-teal-400'
                       : 'text-white'
                       }`}
@@ -495,6 +547,73 @@ export function Playlist() {
           </button>
         </div>
       </div>
+      <SpotifyEmbed
+        trackId={currentTrackId}
+        onClose={() => setCurrentTrackIndex(null)}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        hasNext={currentTrackIndex !== null && currentTrackIndex < playlistTracks.length - 1}
+        hasPrev={currentTrackIndex !== null && currentTrackIndex > 0}
+      />
     </div>
   );
 }
+
+interface SpotifyEmbedProps {
+  trackId: string | null;
+  onClose: () => void;
+  onNext: () => void;
+  onPrev: () => void;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// 공식 임베드 위젯 컴포넌트
+const SpotifyEmbed = ({ trackId, onClose, onNext, onPrev, hasNext, hasPrev }: SpotifyEmbedProps) => {
+  if (!trackId) return null;
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 animate-in slide-in-from-bottom-5 fade-in duration-300">
+
+      {/* 커스텀 컨트롤러 (이전/다음) */}
+      <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md p-2 rounded-50 border border-white/10 shadow-xl">
+        <button
+          onClick={onPrev}
+          disabled={!hasPrev}
+          className={`p-2 rounded-full hover:bg-white/20 transition ${!hasPrev ? 'opacity-30 cursor-not-allowed' : 'text-white'}`}
+        >
+          <SkipBack size={20} fill="currentColor" />
+        </button>
+
+        <div className="w-px h-4 bg-white/20"></div>
+
+        <button
+          onClick={onNext}
+          disabled={!hasNext}
+          className={`p-2 rounded-full hover:bg-white/20 transition ${!hasNext ? 'opacity-30 cursor-not-allowed' : 'text-white'}`}
+        >
+          <SkipForward size={20} fill="currentColor" />
+        </button>
+
+        <div className="w-px h-4 bg-white/20"></div>
+
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-red-500/20 text-white/70 hover:text-red-400 transition">
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Spotify Widget */}
+      <div className="shadow-2xl rounded-xl overflow-hidden border border-white/10">
+        <iframe
+          style={{ borderRadius: '12px' }}
+          src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`}
+          width="320"
+          height="152"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  );
+};

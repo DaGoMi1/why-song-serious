@@ -33,6 +33,7 @@ interface DataState {
 
     fetchRetrievals: (prefs: Preferences) => Promise<void>;
     fetchRecommendations: (prefs: Preferences, tracks: string[]) => Promise<void>;
+    reset: () => void;
 }
 
 export const useDataStore = create<DataState>()(
@@ -96,7 +97,15 @@ export const useDataStore = create<DataState>()(
                 } catch (err) {
                     set({ error: "추천 결과 로딩 실패", isLoading: false });
                 }
-            }
+            },
+            reset: () => set({
+                preferences: null,
+                recommendedTracks: [],
+                clusterData: [],
+                playlistExplanation: null,
+                selectedTracks: [],
+                isLoading: false,
+            }),
         }),
         {
             // 로컬 스토리지
