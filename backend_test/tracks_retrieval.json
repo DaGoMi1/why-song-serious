@@ -1,12 +1,13 @@
 [
   {
     "id": "1",
-    "title": "retrieval1",
+    "spotify_track_id":"0d28khcov6AiegSCpG5TuT",
+    "name": "retrieval1",
     "artist": "retrieval1",
     "album": "retrieval1",
-    "duration": "3:20",
-    "imageUrl": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy",
-    "features": {
+    "duration_ms": "3:20",
+    "image_url": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy",
+    "audio_features": {
       "tempo": 130,
       "energy": 85,
       "danceability": 90,
@@ -17,12 +18,13 @@
   },
   {
     "id": "2",
-    "title": "retrieval2",
+    "spotify_track_id":"5ghIJDpPoe3CfHMGu71E6T",
+    "name": "retrieval2",
     "artist": "retrieval2",
     "album": "retrieval2",
-    "duration": "3:05",
-    "imageUrl": "https://placehold.co/400/ec4899/ffffff?text=Ditto",
-    "features": {
+    "duration_ms": "3:05",
+    "image_url": "https://placehold.co/400/ec4899/ffffff?text=Ditto",
+    "audio_features": {
       "tempo": 134,
       "energy": 60,
       "danceability": 70,
@@ -33,12 +35,13 @@
   },
   {
     "id": "3",
-    "title": "retrieval3",
+    "spotify_track_id":"48wH8bAxvBJO2l14GmNLz7",
+    "name": "retrieval3",
     "artist": "retrieval3",
     "album": "retrieval3",
-    "duration": "3:04",
-    "imageUrl": "https://placehold.co/400/10b981/ffffff?text=Seven",
-    "features": {
+    "duration_ms": "3:04",
+    "image_url": "https://placehold.co/400/10b981/ffffff?text=Seven",
+    "audio_features": {
       "tempo": 125,
       "energy": 75,
       "danceability": 80,
@@ -49,12 +52,13 @@
   },
   {
     "id": "4",
-    "title": "retrieval4",
+    "spotify_track_id":"6dUfUi14QkuIpGA0GFFPyC",
+    "name": "retrieval4",
     "artist": "retrieval4",
     "album": "retrieval4",
-    "duration": "3:00",
-    "imageUrl": "https://placehold.co/400/f59e0b/ffffff?text=IAM",
-    "features":{
+    "duration_ms": "3:00",
+    "image_url": "https://placehold.co/400/f59e0b/ffffff?text=IAM",
+    "audio_features":{
       "tempo": 128,
       "energy": 90,
       "danceability": 85,
@@ -65,12 +69,13 @@
   },
   {
     "id": "5",
-    "title": "retrieval5",
+    "spotify_track_id":"1FTSo4v6BOZH9QxKc3MbVM",
+    "name": "retrieval5",
     "artist": "retrieval5",
     "album": "retrieval5",
-    "duration": "2:34",
-    "imageUrl": "https://placehold.co/400/3b82f6/ffffff?text=SuperShy",
-    "features": {
+    "duration_ms": "2:34",
+    "image_url": "https://placehold.co/400/3b82f6/ffffff?text=SuperShy",
+    "audio_features": {
       "tempo": 150,
       "energy": 95,
       "danceability": 92,

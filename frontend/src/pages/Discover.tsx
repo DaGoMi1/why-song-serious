@@ -16,7 +16,7 @@ export function Discover() {
 
   useEffect(() => {
     if (preferences) {
-      console.log("retriaval start")
+      console.log(preferences)
       fetchRetrievals(preferences);
     } else {
       console.log("no preferences")
@@ -93,7 +93,6 @@ export function Discover() {
             <div className="col-span-1 text-center">#</div>
             <div className="col-span-5">제목</div>
             <div className="col-span-3">앨범</div>
-            <div className="col-span-1">장르</div>
             <div className="col-span-1">BPM</div>
             <div className="col-span-1 text-center">시간</div>
           </div>
@@ -102,13 +101,13 @@ export function Discover() {
           <div className="divide-y divide-white/5">
             {currentTracks.length > 0 ? (
               currentTracks.map((track, index) => {
-                const isSelected = selectedTracks.includes(track.id);
+                const isSelected = selectedTracks.includes(track.spotify_track_id);
                 const globalIndex = startIndex + index + 1;
 
                 return (
                   <div
-                    key={track.id}
-                    onClick={() => toggleTrackSelection(track.id)}
+                    key={track.spotify_track_id}
+                    onClick={() => toggleTrackSelection(track.spotify_track_id)}
                     className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${isSelected ? 'bg-teal-500/20' : ''
                       }`}
                   >
@@ -128,8 +127,8 @@ export function Discover() {
                           </>
                         )}
                         <img
-                          src={track.imageUrl}
-                          alt={track.title}
+                          src={track.image_url}
+                          alt={track.name}
                           className="md:hidden size-12 rounded-lg object-cover"
                         />
                       </div>
@@ -138,13 +137,13 @@ export function Discover() {
                     {/* Title & Artist */}
                     <div className="col-span-12 md:col-span-5 flex items-center gap-4">
                       <img
-                        src={track.imageUrl}
-                        alt={track.title}
+                        src={track.image_url}
+                        alt={track.name}
                         className="hidden md:block size-12 rounded-lg object-cover"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white truncate">
-                          {track.title}
+                          {track.name}
                         </div>
                         <div className="text-sm text-white/60 truncate">
                           {track.artist}
@@ -161,12 +160,12 @@ export function Discover() {
 
                     {/* Tempo */}
                     <div className="hidden md:flex col-span-1 items-center">
-                      <span className="text-white/70 text-sm">{track.tempo}</span>
+                      <span className="text-white/70 text-sm">{track.audio_features.tempo}</span>
                     </div>
 
                     {/* Duration */}
                     <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
-                      <span className="text-white/40 text-sm">{track.duration}</span>
+                      <span className="text-white/40 text-sm">{track.duration_ms}</span>
                     </div>
                   </div>
                 );

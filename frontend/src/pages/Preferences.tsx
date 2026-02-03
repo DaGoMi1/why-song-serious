@@ -64,7 +64,7 @@ const features: FeatureSlider[] = [
     name: '템포 (BPM)',
     icon: Activity,
     description: '곡의 속도',
-    min: 60,
+    min: 0,
     max: 200,
     defaultValue: 120,
   },

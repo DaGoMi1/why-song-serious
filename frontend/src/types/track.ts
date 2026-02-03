@@ -9,11 +9,12 @@ export interface AudioFeatures {
 
 export interface Track {
   id: string;
-  title: string;
+  spotify_track_id: string;
+  name: string;
   artist: string;
   album: string;
-  duration: string;
+  duration_ms: string;
   popularity: number;
-  imageUrl: string;
-  features: AudioFeatures;
+  image_url: string;
+  audio_features: AudioFeatures;
 }

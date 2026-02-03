@@ -83,8 +83,24 @@ export function Playlist() {
     selectedTracks,
     playlistExplanation,
     isLoading,
-    reset
+    reset,
+    retrievalTracks,
   } = useDataStore();
+
+  const selectedSeedTracks = useMemo(() => {
+    if (!retrievalTracks || !selectedTracks) return [];
+    return retrievalTracks.filter(track => selectedTracks.includes(track.spotify_track_id));
+  }, [retrievalTracks, selectedTracks]);
+
+  const selectedTrackDetails = useMemo(() => {
+    // retrievalTracks가 없거나 selectedTracks가 없으면 빈 배열
+    if (!retrievalTracks || !selectedTracks) return [];
+    
+    // selectedTracks(ID 배열)에 포함된 트랙만 필터링
+    return retrievalTracks.filter((track: Track) => 
+      selectedTracks.includes(track.id)
+    );
+  }, [retrievalTracks, selectedTracks]);
 
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
@@ -171,12 +187,12 @@ export function Playlist() {
 
     // 트랙 feature들의 합, 평균 계산
     const sum = playlistTracks.reduce((acc, track) => ({
-      energy: acc.energy + (track.features?.energy || 0),
-      danceability: acc.danceability + (track.features?.danceability || 0),
-      valence: acc.valence + (track.features?.valence || 0),
-      acousticness: acc.acousticness + (track.features?.acousticness || 0),
-      loudness: acc.loudness + (track.features?.loudness || 0),
-      tempo: acc.tempo + (track.features?.tempo || 0)
+      energy: acc.energy + (track.audio_features?.energy || 0),
+      danceability: acc.danceability + (track.audio_features?.danceability || 0),
+      valence: acc.valence + (track.audio_features?.valence || 0),
+      acousticness: acc.acousticness + (track.audio_features?.acousticness || 0),
+      loudness: acc.loudness + (track.audio_features?.loudness || 0),
+      tempo: acc.tempo + (track.audio_features?.tempo || 0)
     }), {
       energy: 0,
       danceability: 0,
@@ -507,13 +523,13 @@ export function Playlist() {
           </div>
         </div>
 
-        {/* Track List */}
+        {/* 이전에 선택한 트랙 목록 */}
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
           <h2 className="text-2xl font-bold text-white mb-6">트랙 목록</h2>
           <div className="space-y-2">
             {playlistTracks.map((track, index) => (
               <div
-                key={track.id}
+                key={track.spotify_track_id}
                 className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentTrackIndex === index ? 'bg-white/10' : ''
                   }`}
                 onClick={() => playTrack(index)}
@@ -530,13 +546,13 @@ export function Playlist() {
                   />
                 </button>
                 <img
-                  src={track.imageUrl}
-                  alt={track.title}
+                  src={track.image_url}
+                  alt={track.name}
                   className="size-12 rounded-lg"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-white truncate">
-                    {track.title}
+                    {track.name}
                   </div>
                   <div className="text-sm text-white/60 truncate">
                     {track.artist}
@@ -545,7 +561,51 @@ export function Playlist() {
                 <div className="text-white/60 text-sm hidden md:block">
                   {track.album}
                 </div>
-                <div className="text-white/40 text-sm">{track.duration}</div>
+                <div className="text-white/40 text-sm">{track.duration_ms}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Track List */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
+          <h2 className="text-2xl font-bold text-white mb-6">트랙 목록</h2>
+          <div className="space-y-2">
+            {playlistTracks.map((track, index) => (
+              <div
+                key={track.spotify_track_id}
+                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentTrackIndex === index ? 'bg-white/10' : ''
+                  }`}
+                onClick={() => playTrack(index)}
+              >
+                <div className="text-white/40 w-8 text-center group-hover:hidden">
+                  {index + 1}
+                </div>
+                <button className="hidden group-hover:block">
+                  <Play
+                    className={`size-8 ${currentTrackIndex === index
+                      ? 'text-teal-400 fill-teal-400'
+                      : 'text-white'
+                      }`}
+                  />
+                </button>
+                <img
+                  src={track.image_url}
+                  alt={track.name}
+                  className="size-12 rounded-lg"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white truncate">
+                    {track.name}
+                  </div>
+                  <div className="text-sm text-white/60 truncate">
+                    {track.artist}
+                  </div>
+                </div>
+                <div className="text-white/60 text-sm hidden md:block">
+                  {track.album}
+                </div>
+                <div className="text-white/40 text-sm">{track.duration_ms}</div>
               </div>
             ))}
           </div>

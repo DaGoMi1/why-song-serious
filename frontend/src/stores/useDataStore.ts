@@ -60,7 +60,10 @@ export const useDataStore = create<DataState>()(
                     const res = await fetch('http://localhost:8000/api/retrieval', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(prefs),
+                        body: JSON.stringify({ 
+                            ...prefs, 
+                            limit: 20 
+                        }),
                     });
                     const data = await res.json();
                     // console.log("retrieval: ",data)

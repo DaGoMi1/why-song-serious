@@ -1,7 +1,0 @@
-[
-  { "id": "1", "title": "Hype Boy", "artist": "NewJeans", "album": "New Jeans", "duration": "3:20", "imageUrl": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy", "genre": "K-Pop", "bpm": 130 },
-  { "id": "2", "title": "Ditto", "artist": "NewJeans", "album": "OMG", "duration": "3:05", "imageUrl": "https://placehold.co/400/ec4899/ffffff?text=Ditto", "genre": "K-Pop", "bpm": 134 },
-  { "id": "3", "title": "Seven", "artist": "Jung Kook", "album": "Golden", "duration": "3:04", "imageUrl": "https://placehold.co/400/10b981/ffffff?text=Seven", "genre": "Pop", "bpm": 125 },
-  { "id": "4", "title": "I AM", "artist": "IVE", "album": "I've IVE", "duration": "3:00", "imageUrl": "https://placehold.co/400/f59e0b/ffffff?text=IAM", "genre": "K-Pop", "bpm": 128 },
-  { "id": "5", "title": "Super Shy", "artist": "NewJeans", "album": "Get Up", "duration": "2:34", "imageUrl": "https://placehold.co/400/3b82f6/ffffff?text=SuperShy", "genre": "K-Pop", "bpm": 150 }
-]
