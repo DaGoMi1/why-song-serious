@@ -6,4 +6,3 @@ torch
 transformers
 huggingface_hub
 python-dotenv
-tqdm
