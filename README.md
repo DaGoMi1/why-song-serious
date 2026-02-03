@@ -18,7 +18,7 @@ ai/feature/explanation/
 │   ├── item_label_mapping.csv
 │   ├── item_embedding.npy
 │   ├── for_cluster.json
-│   └── add_feature_v2.csv
+│   └── add_feature_v3.csv
 │
 ├── src/                          # 실행 코드
 │   ├── generate_cluster_description.py  # 설명 생성
