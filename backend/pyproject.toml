@@ -17,6 +17,7 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 pgvector = "^0.3.0"
 httpx = "^0.28.0"
 numpy = "^1.26.0"
+greenlet = "^3.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
