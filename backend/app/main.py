@@ -40,7 +40,8 @@ app.add_middleware(
 
 app.include_router(auth_router)
 
-
+from app.domain.track.router import router as track_router
+app.include_router(track_router)
 
 @app.get("/health")
 async def health_check():
