@@ -15,6 +15,8 @@
 ### 1. 의존성 설치
 
 ```bash
+pip install poetry
+cd ./backend
 poetry install
 ```
 
@@ -74,14 +76,14 @@ why-song-serious/
 
 ## API 엔드포인트
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/api/auth/guest` | Guest 로그인 |
-| GET | `/api/auth/me` | 현재 유저 정보 |
-| POST | `/api/tracks/search` | 취향 기반 트랙 검색 |
-| POST | `/api/interactions/play` | 트랙 재생 기록 |
-| POST | `/api/interactions/select` | 트랙 선택 기록 |
-| POST | `/api/recommendations` | 추천 생성 |
-| POST | `/api/playlists` | 플레이리스트 생성 |
-| GET | `/api/playlists` | 플레이리스트 목록 |
-| GET | `/api/visualizations/radar` | 레이더 차트 데이터 |
+| Method | Endpoint                    | 설명                |
+| ------ | --------------------------- | ------------------- |
+| POST   | `/api/auth/guest`           | Guest 로그인        |
+| GET    | `/api/auth/me`              | 현재 유저 정보      |
+| POST   | `/api/tracks/search`        | 취향 기반 트랙 검색 |
+| POST   | `/api/interactions/play`    | 트랙 재생 기록      |
+| POST   | `/api/interactions/select`  | 트랙 선택 기록      |
+| POST   | `/api/recommendations`      | 추천 생성           |
+| POST   | `/api/playlists`            | 플레이리스트 생성   |
+| GET    | `/api/playlists`            | 플레이리스트 목록   |
+| GET    | `/api/visualizations/radar` | 레이더 차트 데이터  |
