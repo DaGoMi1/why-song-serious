@@ -21,6 +21,7 @@ from app.domain.models import (
     PlaylistTrack,
     UserPreference,
     TrackInteraction,
+    Cluster,
 )
 
 # Alembic Config 객체

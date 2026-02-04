@@ -1,7 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import BigInteger, String, Integer, ARRAY, DECIMAL
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import BigInteger, String, Integer, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 
 from app.database import Base
@@ -22,3 +22,11 @@ class Track(Base):
     # Embeddings for vector search
     audio_features: Mapped[list] = mapped_column(Vector(6), nullable=False)
     embedding: Mapped[list] = mapped_column(Vector(64), nullable=False)
+    
+    # Cluster FK
+    cluster_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger, ForeignKey("clusters.id"), nullable=False
+    )
+
+    # Relationships
+    cluster: Mapped[Optional["Cluster"]] = relationship(back_populates="tracks")
