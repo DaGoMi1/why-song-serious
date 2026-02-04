@@ -8,6 +8,7 @@
 - FastAPI
 - SQLAlchemy 2.0 (async)
 - PostgreSQL + pgvector
+- Alembic (DB 마이그레이션)
 - Poetry
 
 ## 시작하기
@@ -49,7 +50,7 @@ poetry run uvicorn app.main:app --reload
 ## 프로젝트 구조
 
 ```
-why-song-serious/
+backend/
 ├── app/
 │   ├── main.py              # FastAPI 앱 진입점
 │   ├── config.py            # 설정
@@ -68,11 +69,57 @@ why-song-serious/
 │   │
 │   └── common/              # 공통 유틸
 │
-├── ml_models/               # AI 모델 파일
-├── tests/
+├── alembic/                 # DB 마이그레이션
+│   ├── versions/            # 마이그레이션 파일들
+│   └── env.py
+│
+├── alembic.ini
 ├── pyproject.toml
 └── .env.example
 ```
+
+## 데이터베이스 마이그레이션
+
+이 프로젝트는 [Alembic](https://alembic.sqlalchemy.org/)을 사용하여 DB 스키마 변경을 관리합니다.
+
+### 처음 설정할 때
+
+**새 DB인 경우** (테이블이 없음):
+```bash
+alembic upgrade head
+```
+
+**기존 DB인 경우** (이미 테이블이 있음):
+```bash
+# 현재 스키마 상태를 최신 마이그레이션으로 마킹
+alembic stamp head
+```
+
+### 모델 변경 시 워크플로우
+
+1. **모델 수정** - `app/domain/*/model.py` 파일 수정
+
+2. **마이그레이션 자동 생성**
+   ```bash
+   alembic revision --autogenerate -m "변경 내용 설명"
+   ```
+
+3. **생성된 파일 확인** - `alembic/versions/` 에 생성된 파일의 `upgrade()`, `downgrade()` 함수 검토
+
+4. **마이그레이션 적용**
+   ```bash
+   alembic upgrade head
+   ```
+
+### 자주 쓰는 명령어
+
+| 명령어 | 설명 |
+|--------|------|
+| `alembic upgrade head` | 모든 마이그레이션 적용 |
+| `alembic downgrade -1` | 마지막 마이그레이션 롤백 |
+| `alembic current` | 현재 적용된 버전 확인 |
+| `alembic history` | 마이그레이션 히스토리 조회 |
+| `alembic stamp <revision>` | 실제 실행 없이 버전만 마킹 |
 
 ## API 엔드포인트
 
