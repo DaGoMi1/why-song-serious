@@ -19,14 +19,18 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-class UserPreferences(BaseModel):
-    energy: int
-    valence: int
-    danceability: int
-    acousticness: int
-    loudness: int
-    tempo: int
-  
+class PreferenceFeatures(BaseModel):
+    energy: float
+    valence: float
+    danceability: float
+    acousticness: float
+    loudness: float
+    tempo: float
+    
+class RetrievalRequest(BaseModel):
+    preferences: PreferenceFeatures
+    limit: int = 20
+
 def load_json(filename):
     current_dir=os.path.dirname(os.path.abspath(__file__))
     file_path=os.path.join(current_dir, filename)
@@ -48,10 +52,11 @@ def get_cluster_data():
     data=load_json('clustered_data.json')
     return data
 
-@app.post("/api/retrieval")
-def recommend_tracks(preferences: UserPreferences):
-    print("Received preferences:", preferences)
+@app.post("/api/search")
+def recommend_tracks(request: RetrievalRequest):
+    print("Received request:", request)
+    print("preference:", request.preferences)
     data=load_json('tracks_retrieval.json')
     
     recommended_tracks=data.copy()
-    return recommended_tracks[:10]  # Return top 10 recommendations
+    return recommended_tracks[:request.limit]  

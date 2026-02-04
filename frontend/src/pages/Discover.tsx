@@ -18,6 +18,7 @@ export function Discover() {
     if (preferences) {
       console.log(preferences)
       fetchRetrievals(preferences);
+      console.log("fetch retrieval end")
     } else {
       console.log("no preferences")
       alert("preferences 정보가 없습니다.");

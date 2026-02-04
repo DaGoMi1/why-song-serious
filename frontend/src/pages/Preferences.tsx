@@ -91,13 +91,14 @@ export function Preferences() {
   const handleContinue = async () => {
     // Store에 preferences 저장
     const payload = {
-      energy: featureValues['energy'],
-      valence: featureValues['valence'],
-      danceability: featureValues['danceability'],
       acousticness: featureValues['acousticness'],
+      valence: featureValues['valence'],
+      energy: featureValues['energy'],
+      danceability: featureValues['danceability'],
       loudness: featureValues['loudness'],
       tempo: featureValues['tempo'],
     };
+    console.log(payload)
     setPreferences(payload);
     navigate('/discover');
   };

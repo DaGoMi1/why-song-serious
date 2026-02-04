@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'; // 👈 추가됨
+import { Preferences } from '../pages/Preferences';
 
 interface Preferences {
     energy: number;
@@ -57,16 +58,25 @@ export const useDataStore = create<DataState>()(
             fetchRetrievals: async (prefs) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const res = await fetch('http://localhost:8000/api/retrieval', {
+                    console.log("fetch retrieval")
+                    const payload={
+                        preferences: prefs,
+                        limit: 20
+                    }
+                    const res = await fetch('http://localhost:8000/api/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            ...prefs, 
-                            limit: 20 
-                        }),
+                        body: JSON.stringify(payload),
                     });
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        console.error("🔥 백엔드 에러 응답:", errorData);
+                        // 에러가 나면 빈 배열로 설정하여 .slice 에러 방지
+                        set({ retrievalTracks: [], isLoading: false, error: "서버 요청 실패" });
+                        return; 
+                    }
                     const data = await res.json();
-                    // console.log("retrieval: ",data)
+                    console.log("retrieval: ",data)
                     set({ 
                         retrievalTracks: data,
                         isLoading: false 

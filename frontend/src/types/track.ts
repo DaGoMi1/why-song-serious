@@ -1,10 +1,10 @@
 export interface AudioFeatures {
-  tempo: number;
-  energy: number;
-  danceability: number;
-  valence: number;
-  acousticness: number;
-  loudness: number;
+  acousticness: number,
+  valence: number,
+  energy: number,
+  danceability: number,
+  loudness: number,
+  tempo: number,
 }
 
 export interface Track {

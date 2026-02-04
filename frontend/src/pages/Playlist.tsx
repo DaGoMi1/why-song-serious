@@ -84,23 +84,22 @@ export function Playlist() {
     playlistExplanation,
     isLoading,
     reset,
-    retrievalTracks,
   } = useDataStore();
 
-  const selectedSeedTracks = useMemo(() => {
-    if (!retrievalTracks || !selectedTracks) return [];
-    return retrievalTracks.filter(track => selectedTracks.includes(track.spotify_track_id));
-  }, [retrievalTracks, selectedTracks]);
+  // const selectedSeedTracks = useMemo(() => {
+  //   if (!retrievalTracks || !selectedTracks) return [];
+  //   return retrievalTracks.filter(track => selectedTracks.includes(track.spotify_track_id));
+  // }, [retrievalTracks, selectedTracks]);
 
-  const selectedTrackDetails = useMemo(() => {
-    // retrievalTracks가 없거나 selectedTracks가 없으면 빈 배열
-    if (!retrievalTracks || !selectedTracks) return [];
+  // const selectedTrackDetails = useMemo(() => {
+  //   // retrievalTracks가 없거나 selectedTracks가 없으면 빈 배열
+  //   if (!retrievalTracks || !selectedTracks) return [];
     
-    // selectedTracks(ID 배열)에 포함된 트랙만 필터링
-    return retrievalTracks.filter((track: Track) => 
-      selectedTracks.includes(track.id)
-    );
-  }, [retrievalTracks, selectedTracks]);
+  //   // selectedTracks(ID 배열)에 포함된 트랙만 필터링
+  //   return retrievalTracks.filter((track: Track) => 
+  //     selectedTracks.includes(track.id)
+  //   );
+  // }, [retrievalTracks, selectedTracks]);
 
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
