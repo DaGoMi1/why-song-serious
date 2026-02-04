@@ -10,13 +10,7 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from app.database import engine, Base
-    from app.domain.models import User, AuthType, Track, Playlist, PlaylistTrack, UserPreference, TrackInteraction  # 모든 모델 import
-    
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    print("Database tables created")
+    print("Application started")
     yield
     print("Shutting down...")
 
