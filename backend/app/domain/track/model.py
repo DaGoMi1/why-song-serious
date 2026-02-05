@@ -19,14 +19,15 @@ class Track(Base):
     popularity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
-    # Embeddings for vector search
-    audio_features: Mapped[list] = mapped_column(Vector(6), nullable=False)
+    # Audio features for vector search
+    raw_features: Mapped[list] = mapped_column(Vector(6), nullable=False)
+    norm_features: Mapped[list] = mapped_column(Vector(6), nullable=False)
     embedding: Mapped[list] = mapped_column(Vector(64), nullable=False)
     
     # Cluster FK
-    cluster_id: Mapped[Optional[int]] = mapped_column(
+    cluster_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("clusters.id"), nullable=False
     )
 
     # Relationships
-    cluster: Mapped[Optional["Cluster"]] = relationship(back_populates="tracks")
+    cluster: Mapped["Cluster"] = relationship(back_populates="tracks")

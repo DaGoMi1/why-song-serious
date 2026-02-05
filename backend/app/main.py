@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.auth.router import router as auth_router
 
+from app.domain import models
+
 settings = get_settings()
 
 @asynccontextmanager
