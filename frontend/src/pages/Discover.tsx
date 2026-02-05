@@ -13,7 +13,7 @@ export function Discover() {
 
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  console.log(preferences)
+
   useEffect(() => {
     const initFetch = async () => {
       if (preferences) {
@@ -29,8 +29,7 @@ export function Discover() {
 
     initFetch();
   }, [navigate, preferences]);
-  console.log(preferences)
-  console.log(retrievalTracks)
+
   // 페이지네이션
   const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;
@@ -48,7 +47,8 @@ export function Discover() {
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
       // store에 선택된 트랙들 저장
-      setSelectedTracks(selectedTracks);
+      console.log(selectedTracks)
+      useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
   };
