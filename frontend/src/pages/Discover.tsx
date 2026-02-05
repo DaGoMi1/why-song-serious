@@ -15,15 +15,19 @@ export function Discover() {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    if (preferences) {
-      console.log(preferences)
-      fetchRetrievals(preferences);
-      console.log("fetch retrieval end")
-    } else {
-      console.log("no preferences")
-      alert("preferences 정보가 없습니다.");
-      navigate('/preferences');
+    const initFetch = async () => {
+      if (preferences) {
+        console.log("fetch retrieval")
+        await fetchRetrievals(preferences);
+        console.log("fetch retrieval end")
+      } else {
+        console.log("no preferences")
+        alert("preferences 정보가 없습니다.");
+        navigate('/preferences');
+      }
     }
+
+    initFetch();
   }, [navigate, preferences]);
 
   // 페이지네이션
@@ -43,7 +47,8 @@ export function Discover() {
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
       // store에 선택된 트랙들 저장
-      setSelectedTracks(selectedTracks);
+      console.log(selectedTracks)
+      useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
   };

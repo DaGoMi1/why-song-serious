@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
 import { SpotifyEmbed } from '../components/SpotifyEmbed';
-import { Play, Share2, Download, Music, RefreshCw, Loader2, Pause } from 'lucide-react';
+import { Play, Share2, Download, Music, RefreshCw, Loader2, Pause, CheckCircle2 } from 'lucide-react';
 import {
   RadarChart,
   PolarGrid,
@@ -72,34 +72,19 @@ const clusterColors = generateGradientColors(600);
 export function Playlist() {
   const navigate = useNavigate();
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
-
-  // 임베딩 위젯에서 음악을 재생하기 위해 인덱스 관리
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
+  const [activeContext, setActiveContext] = useState<'selected' | 'recommended' | null>(null);
   const {
     recommendedTracks,
     clusterData,
     fetchRecommendations,
     preferences,
     selectedTracks,
+    retrievalTracks,
     playlistExplanation,
     isLoading,
     reset,
   } = useDataStore();
-
-  // const selectedSeedTracks = useMemo(() => {
-  //   if (!retrievalTracks || !selectedTracks) return [];
-  //   return retrievalTracks.filter(track => selectedTracks.includes(track.spotify_track_id));
-  // }, [retrievalTracks, selectedTracks]);
-
-  // const selectedTrackDetails = useMemo(() => {
-  //   // retrievalTracks가 없거나 selectedTracks가 없으면 빈 배열
-  //   if (!retrievalTracks || !selectedTracks) return [];
-    
-  //   // selectedTracks(ID 배열)에 포함된 트랙만 필터링
-  //   return retrievalTracks.filter((track: Track) => 
-  //     selectedTracks.includes(track.id)
-  //   );
-  // }, [retrievalTracks, selectedTracks]);
 
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
@@ -114,28 +99,43 @@ export function Playlist() {
     setPlaylistTracks(recommendedTracks);
   }, [navigate, recommendedTracks]);
 
+  console.log(selectedTracks)
+  console.log(retrievalTracks)
+  // retrievalTracks에서 ID가 selectedTracks에 포함된 곡들만 필터링
+  const selectedSeedTracks = useMemo(() => {
+    if (!retrievalTracks || !selectedTracks) return [];
+    return retrievalTracks.filter((track: any) => 
+      selectedTracks.includes(track.spotify_track_id)
+    );
+  }, [retrievalTracks, selectedTracks]);
+  
   // 개별 곡 클릭
-  const playTrack = (index: number) => {
-    if (currentTrackIndex === index) {
-      setCurrentTrackIndex(null); // 같은 곡 누르면 닫기
+  const playTrack = (index: number, type: 'selected' | 'recommended') => {
+    if (currentTrackIndex === index && activeContext === type) {
+      setCurrentTrackIndex(null);
+      setActiveContext(null);
     } else {
-      setCurrentTrackIndex(index); // 해당 인덱스 재생
+      setCurrentTrackIndex(index);
+      setActiveContext(type);
     }
   };
 
   // 전체 재생 버튼 클릭
   const handlePlayAll = () => {
     if (playlistTracks.length > 0) {
-      if (currentTrackIndex !== null) {
-        // 이미 재생 중이면 정지
+      // 현재 '추천 목록'을 재생 중이라면 -> 정지
+      if (currentTrackIndex !== null && activeContext === 'recommended') {
         setCurrentTrackIndex(null);
+        setActiveContext(null);
       } else {
-        // 아니면 0번부터 시작
+        // 정지 상태거나 '시드 목록' 재생 중이라면 -> '추천 목록' 처음부터 시작
         setCurrentTrackIndex(0);
+        setActiveContext('recommended');
       }
     }
   };
 
+  const currentList = activeContext === 'selected' ? selectedSeedTracks : playlistTracks;
   // 다음 곡 핸들러
   const handleNext = () => {
     if (currentTrackIndex !== null && currentTrackIndex < playlistTracks.length - 1) {
@@ -151,7 +151,9 @@ export function Playlist() {
   };
 
   // 현재 재생중인 트랙
-  const currentTrackId = currentTrackIndex !== null ? playlistTracks[currentTrackIndex]?.id : null;
+  const currentTrackId = currentTrackIndex !== null && activeContext
+    ? currentList[currentTrackIndex]?.id || currentList[currentTrackIndex]?.spotify_track_id
+    : null;
 
   const handleShare = async () => {
     try {
@@ -523,48 +525,40 @@ export function Playlist() {
         </div>
 
         {/* 이전에 선택한 트랙 목록 */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">트랙 목록</h2>
-          <div className="space-y-2">
-            {playlistTracks.map((track, index) => (
-              <div
-                key={track.spotify_track_id}
-                className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentTrackIndex === index ? 'bg-white/10' : ''
-                  }`}
-                onClick={() => playTrack(index)}
-              >
-                <div className="text-white/40 w-8 text-center group-hover:hidden">
-                  {index + 1}
-                </div>
-                <button className="hidden group-hover:block">
-                  <Play
-                    className={`size-8 ${currentTrackIndex === index
-                      ? 'text-teal-400 fill-teal-400'
-                      : 'text-white'
+        {selectedSeedTracks.length > 0 && (
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              선택한 트랙
+            </h2>
+            <div className="space-y-2">
+              {selectedSeedTracks.map((track: any, index: number) => {
+                const isPlaying = currentTrackIndex === index && activeContext === 'selected';
+                return (
+                  <div
+                    key={`seed-${track.id}`}
+                    className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${isPlaying ? 'bg-white/10' : ''
                       }`}
-                  />
-                </button>
-                <img
-                  src={track.image_url}
-                  alt={track.name}
-                  className="size-12 rounded-lg"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-white truncate">
-                    {track.name}
+                    onClick={() => playTrack(index, 'selected')}
+                  >
+                    <div className="text-white/40 w-8 text-center group-hover:hidden">
+                      {isPlaying ? <Music className="size-4 animate-bounce text-teal-400 mx-auto" /> : index + 1}
+                    </div>
+                    <button className="hidden group-hover:block">
+                      <Play className={`size-8 mx-auto ${isPlaying ? 'text-teal-400 fill-teal-400' : 'text-white'}`} />
+                    </button>
+                    <img src={track.image_url} alt={track.name} className={`size-12 rounded-lg ${isPlaying ? 'opacity-100' : 'opacity-80'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-semibold truncate ${isPlaying ? 'text-teal-400' : 'text-white'}`}>{track.name}</div>
+                      <div className="text-sm text-white/60 truncate">{track.artist}</div>
+                    </div>
+                    <div className="text-white/60 text-sm hidden md:block">{track.album}</div>
+                    <div className="text-white/40 text-sm w-12 text-right">{track.duration_ms || '-'}</div>
                   </div>
-                  <div className="text-sm text-white/60 truncate">
-                    {track.artist}
-                  </div>
-                </div>
-                <div className="text-white/60 text-sm hidden md:block">
-                  {track.album}
-                </div>
-                <div className="text-white/40 text-sm">{track.duration_ms}</div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Track List */}
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
@@ -575,7 +569,7 @@ export function Playlist() {
                 key={track.spotify_track_id}
                 className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${currentTrackIndex === index ? 'bg-white/10' : ''
                   }`}
-                onClick={() => playTrack(index)}
+                onClick={() => playTrack(index, 'recommended')}
               >
                 <div className="text-white/40 w-8 text-center group-hover:hidden">
                   {index + 1}

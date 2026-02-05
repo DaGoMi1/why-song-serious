@@ -56,7 +56,7 @@ const features: FeatureSlider[] = [
     icon: Volume2,
     description: '음악 볼륨',
     min: -60,
-    max: 0,
+    max: 10,
     defaultValue: -30,
   },
   {
@@ -65,7 +65,7 @@ const features: FeatureSlider[] = [
     icon: Activity,
     description: '곡의 속도',
     min: 0,
-    max: 200,
+    max: 220,
     defaultValue: 120,
   },
 ];
@@ -91,14 +91,13 @@ export function Preferences() {
   const handleContinue = async () => {
     // Store에 preferences 저장
     const payload = {
-      acousticness: featureValues['acousticness'],
-      valence: featureValues['valence'],
-      energy: featureValues['energy'],
-      danceability: featureValues['danceability'],
+      acousticness: featureValues['acousticness']/100,
+      valence: featureValues['valence']/100,
+      energy: featureValues['energy']/100,
+      danceability: featureValues['danceability']/100,
       loudness: featureValues['loudness'],
       tempo: featureValues['tempo'],
     };
-    console.log(payload)
     setPreferences(payload);
     navigate('/discover');
   };
