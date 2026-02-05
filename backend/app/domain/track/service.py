@@ -8,15 +8,17 @@ from app.domain.preference.model import UserPreference
 async def save_user_preference(
     db: AsyncSession,
     user_id: int,
-    preferences: list[float],
+    normalized_preferences: list[float],
 ) -> UserPreference:
-    """사용자 취향 저장"""
-    # 0~100 → 0~1 정규화
-    normalized = [round(p / 100, 2) for p in preferences]
+    """
+    사용자 취향 저장
     
+    Args:
+        normalized_preferences: 이미 0~1로 정규화된 값
+    """
     preference = UserPreference(
         user_id=user_id,
-        preference_values=normalized,
+        preference_values=normalized_preferences,
     )
     
     db.add(preference)
@@ -28,26 +30,28 @@ async def save_user_preference(
 
 async def search_tracks_by_preference(
     db: AsyncSession,
-    preferences: list[float],
+    normalized_preferences: list[float],
     limit: int = 20,
 ) -> list[Track]:
     """
     취향 기반 트랙 검색
     
-    1. user_preferences 값을 audio_features 컬럼과 cosine similarity 검색
-    """
-    # 0~100 → 0~1 정규화
-    normalized = [round(p / 100, 2) for p in preferences]
+    norm_features 컬럼과 벡터 유사도 검색
+    - <-> : 유클리디안 거리 (L2)
+    - <=> : 코사인 거리
+    - <#> : 내적 (음수, 작을수록 유사)
     
-    # pgvector cosine distance 검색 (<=> 연산자)
-    # cosine distance = 1 - cosine similarity, 작을수록 유사
-    embedding_str = f"[{','.join(map(str, normalized))}]"
+    Args:
+        normalized_preferences: 이미 0~1로 정규화된 값
+    """
+    embedding_str = f"[{','.join(map(str, normalized_preferences))}]"
     
     query = text("""
         SELECT id, spotify_track_id, name, artist, album, 
-               duration_ms, popularity, image_url, audio_features
+               duration_ms, popularity, image_url, 
+               raw_features, norm_features, embedding, cluster_id
         FROM tracks
-        ORDER BY audio_features <=> :embedding
+        ORDER BY norm_features <-> :embedding
         LIMIT :limit
     """)
     
@@ -66,7 +70,10 @@ async def search_tracks_by_preference(
             duration_ms=row.duration_ms,
             popularity=row.popularity,
             image_url=row.image_url,
-            audio_features=row.audio_features,
+            raw_features=row.raw_features,
+            norm_features=row.norm_features,
+            embedding=row.embedding,
+            cluster_id=row.cluster_id,
         )
         tracks.append(track)
     
