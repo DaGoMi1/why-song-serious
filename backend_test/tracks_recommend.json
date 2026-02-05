@@ -1,0 +1,87 @@
+[
+  {
+    "id":1,
+    "spotify_track_id": "0d28khcov6AiegSCpG5TuT",
+    "name": "recommend1",
+    "artist": "recommend1",
+    "album": "recommend1",
+    "duration_ms": "3:20",
+    "image_url": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy",
+    "audio_features": {
+      "tempo": 130,
+      "energy": 85,
+      "danceability": 90,
+      "valence": 80,
+      "acousticness": 10,
+      "loudness": -10
+    }
+  },
+  {
+    "id":2,
+    "spotify_track_id": "5ghIJDpPoe3CfHMGu71E6T",
+    "name": "recommend2",
+    "artist": "recommend2",
+    "album": "recommend2",
+    "duration_ms": "3:05",
+    "image_url": "https://placehold.co/400/ec4899/ffffff?text=Ditto",
+    "audio_features": {
+      "tempo": 134,
+      "energy": 60,
+      "danceability": 70,
+      "valence": 50,
+      "acousticness": 40,
+      "loudness": -5.883
+    }
+  },
+  {
+    "id":3,
+    "spotify_track_id": "48wH8bAxvBJO2l14GmNLz7",
+    "name": "recommend3",
+    "artist": "recommend3",
+    "album": "recommend3",
+    "duration_ms": "3:04",
+    "image_url": "https://placehold.co/400/10b981/ffffff?text=Seven",
+    "audio_features": {
+      "tempo": 125,
+      "energy": 75,
+      "danceability": 80,
+      "valence": 85,
+      "acousticness": 20,
+      "loudness": -2
+    }
+  },
+  {
+    "id":4,
+    "spotify_track_id": "6dUfUi14QkuIpGA0GFFPyC",
+    "name": "recommend4",
+    "artist": "recommend4",
+    "album": "recommend4",
+    "duration_ms": "3:00",
+    "image_url": "https://placehold.co/400/f59e0b/ffffff?text=IAM",
+    "audio_features":{
+      "tempo": 128,
+      "energy": 90,
+      "danceability": 85,
+      "valence": 70,
+      "acousticness": 5,
+      "loudness": -15
+    }
+  },
+  {
+    "id":5,
+    "spotify_track_id": "1FTSo4v6BOZH9QxKc3MbVM",
+    "name": "recommend5",
+    "artist": "recommend5",
+    "album": "recommend5",
+    "duration_ms": "2:34",
+    "image_url": "https://placehold.co/400/3b82f6/ffffff?text=SuperShy",
+    "audio_features": {
+      "tempo": 150,
+      "energy": 95,
+      "danceability": 92,
+      "valence": 90,
+      "acousticness": 10,
+      "loudness": -20
+    }
+  }
+]
