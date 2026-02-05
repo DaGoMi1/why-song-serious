@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware'; // 👈 추가됨
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { Preferences } from '../pages/Preferences';
 
 interface Preferences {
@@ -63,7 +63,7 @@ export const useDataStore = create<DataState>()(
                         preferences: prefs,
                         limit: 20
                     }
-                    const res = await fetch('/api/search', {
+                    const res = await fetch('/api/tracks/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
