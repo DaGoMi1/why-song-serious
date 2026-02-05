@@ -63,7 +63,7 @@ export const useDataStore = create<DataState>()(
                         preferences: prefs,
                         limit: 20
                     }
-                    const res = await fetch('http://localhost:8000/api/search', {
+                    const res = await fetch('/api/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
@@ -92,14 +92,14 @@ export const useDataStore = create<DataState>()(
                 try {
                     const payload = { ...prefs, selected_tracks: tracks };
 
-                    const res = await fetch('http://localhost:8000/api/recommend', {
+                    const res = await fetch('/api/recommend', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
                     });
                     const data = await res.json();
 
-                    const clusterRes = await fetch('http://localhost:8000/api/cluster');
+                    const clusterRes = await fetch('/api/cluster');
                     const clusterData = await clusterRes.json();
                     // console.log("Received data:", data);
                     set({ 
