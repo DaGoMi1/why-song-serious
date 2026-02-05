@@ -122,7 +122,7 @@ export const useDataStore = create<DataState>()(
         }),
         {
             // 로컬 스토리지
-            name: 'music-storage', 
+            name: 'music-storage-v2', 
             storage: createJSONStorage(() => localStorage), 
         }
     )

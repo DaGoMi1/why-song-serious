@@ -13,19 +13,24 @@ export function Discover() {
 
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-
+  console.log(preferences)
   useEffect(() => {
-    if (preferences) {
-      console.log(preferences)
-      fetchRetrievals(preferences);
-      console.log("fetch retrieval end")
-    } else {
-      console.log("no preferences")
-      alert("preferences 정보가 없습니다.");
-      navigate('/preferences');
+    const initFetch = async () => {
+      if (preferences) {
+        console.log("fetch retrieval")
+        await fetchRetrievals(preferences);
+        console.log("fetch retrieval end")
+      } else {
+        console.log("no preferences")
+        alert("preferences 정보가 없습니다.");
+        navigate('/preferences');
+      }
     }
-  }, [navigate, preferences]);
 
+    initFetch();
+  }, [navigate, preferences]);
+  console.log(preferences)
+  console.log(retrievalTracks)
   // 페이지네이션
   const totalPages = Math.ceil(retrievalTracks.length / TRACKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRACKS_PER_PAGE;

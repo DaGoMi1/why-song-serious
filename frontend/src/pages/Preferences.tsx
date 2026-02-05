@@ -98,7 +98,6 @@ export function Preferences() {
       loudness: featureValues['loudness'],
       tempo: featureValues['tempo'],
     };
-    console.log(payload)
     setPreferences(payload);
     navigate('/discover');
   };
