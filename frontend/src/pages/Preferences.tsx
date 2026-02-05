@@ -20,8 +20,8 @@ const features: FeatureSlider[] = [
     icon: Zap,
     description: '곡의 강렬함과 활동성',
     min: 0,
-    max: 100,
-    defaultValue: 50,
+    max: 1,
+    defaultValue: 0.5,
   },
   {
     id: 'valence',
@@ -29,8 +29,8 @@ const features: FeatureSlider[] = [
     icon: Heart,
     description: '곡이 전달하는 긍정적인 느낌',
     min: 0,
-    max: 100,
-    defaultValue: 50,
+    max: 1,
+    defaultValue: 0.5,
   },
   {
     id: 'danceability',
@@ -38,8 +38,8 @@ const features: FeatureSlider[] = [
     icon: Music,
     description: '춤추기에 적합한 정도',
     min: 0,
-    max: 100,
-    defaultValue: 50,
+    max: 1,
+    defaultValue: 0.5,
   },
   {
     id: 'acousticness',
@@ -47,8 +47,8 @@ const features: FeatureSlider[] = [
     icon: Mic2,
     description: '어쿠스틱 악기 사용 정도',
     min: 0,
-    max: 100,
-    defaultValue: 50,
+    max: 1,
+    defaultValue: 0.5,
   },
   {
     id: 'loudness',
@@ -56,7 +56,7 @@ const features: FeatureSlider[] = [
     icon: Volume2,
     description: '음악 볼륨',
     min: -60,
-    max: 0,
+    max: 10,
     defaultValue: -30,
   },
   {
@@ -65,7 +65,7 @@ const features: FeatureSlider[] = [
     icon: Activity,
     description: '곡의 속도',
     min: 0,
-    max: 200,
+    max: 220,
     defaultValue: 120,
   },
 ];
