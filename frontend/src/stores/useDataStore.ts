@@ -32,6 +32,9 @@ interface DataState {
     isLoading: boolean;
     error: string | null;
 
+    accessToken: string | null;
+    loginAsGuest: () => Promise<void>;
+
     fetchRetrievals: (prefs: Preferences) => Promise<void>;
     fetchRecommendations: (prefs: Preferences, tracks: string[]) => Promise<void>;
     reset: () => void;
@@ -39,7 +42,7 @@ interface DataState {
 
 export const useDataStore = create<DataState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             preferences: null,
             selectedTracks: [],
             retrievalTracks: [],
@@ -48,16 +51,42 @@ export const useDataStore = create<DataState>()(
             clusterData: [],
             isLoading: false,
             error: null,
+            accessToken: null,
 
 
             // preferences 및 selectedTracks 설정
             setPreferences: (prefs) => set({ preferences: prefs }),
             setSelectedTracks: (tracks) => set({ selectedTracks: tracks }),
 
+            // 게스트 로그인
+            loginAsGuest: async () => {
+                set({ isLoading: true, error: null });
+                try {
+                    const res = await fetch('/api/auth/guest', {
+                        method: 'POST',
+                    });
+                    
+                    if (!res.ok) {
+                        throw new Error('로그인 실패');
+                    }
+
+                    const data = await res.json();
+                    set({ accessToken: data.access_token, isLoading: false });
+                } catch (err) {
+                    set({ error: "로그인 실패", isLoading: false });
+                    throw err;
+                }
+            },
+
             // preference를 전달하고 retrieval 데이터를 받아옴
             fetchRetrievals: async (prefs) => {
                 set({ isLoading: true, error: null });
                 try {
+                    const token = get().accessToken;
+                    if (!token) {
+                        throw new Error("로그인이 필요합니다.");
+                    }
+
                     console.log("fetch retrieval")
                     const payload={
                         preferences: prefs,
@@ -65,7 +94,10 @@ export const useDataStore = create<DataState>()(
                     }
                     const res = await fetch('/api/tracks/search', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: JSON.stringify(payload),
                     });
                     if (!res.ok) {
@@ -78,7 +110,7 @@ export const useDataStore = create<DataState>()(
                     const data = await res.json();
                     console.log("retrieval: ",data)
                     set({ 
-                        retrievalTracks: data,
+                        retrievalTracks: data.tracks, // 응답 구조에 맞게 수정 (.tracks)
                         isLoading: false 
                     });
                 } catch (err) {
@@ -90,16 +122,30 @@ export const useDataStore = create<DataState>()(
             fetchRecommendations: async (prefs, tracks) => {
                 set({ isLoading: true, error: null });
                 try {
+                    const token = get().accessToken;
+                    if (!token) {
+                        throw new Error("로그인이 필요합니다.");
+                    }
+
                     const payload = { ...prefs, selected_tracks: tracks };
 
+                    // 추천 요청 시 헤더 추가
                     const res = await fetch('/api/recommend', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: JSON.stringify(payload),
                     });
                     const data = await res.json();
 
-                    const clusterRes = await fetch('/api/cluster');
+                    // 클러스터 요청 시 헤더 추가
+                    const clusterRes = await fetch('/api/cluster', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
                     const clusterData = await clusterRes.json();
                     // console.log("Received data:", data);
                     set({ 
@@ -118,6 +164,7 @@ export const useDataStore = create<DataState>()(
                 playlistExplanation: null,
                 selectedTracks: [],
                 isLoading: false,
+                accessToken: null,
             }),
         }),
         {
