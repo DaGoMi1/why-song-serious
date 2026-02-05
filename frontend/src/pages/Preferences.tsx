@@ -20,8 +20,8 @@ const features: FeatureSlider[] = [
     icon: Zap,
     description: '곡의 강렬함과 활동성',
     min: 0,
-    max: 1,
-    defaultValue: 0.5,
+    max: 100,
+    defaultValue: 50,
   },
   {
     id: 'valence',
@@ -29,8 +29,8 @@ const features: FeatureSlider[] = [
     icon: Heart,
     description: '곡이 전달하는 긍정적인 느낌',
     min: 0,
-    max: 1,
-    defaultValue: 0.5,
+    max: 100,
+    defaultValue: 50,
   },
   {
     id: 'danceability',
@@ -38,8 +38,8 @@ const features: FeatureSlider[] = [
     icon: Music,
     description: '춤추기에 적합한 정도',
     min: 0,
-    max: 1,
-    defaultValue: 0.5,
+    max: 100,
+    defaultValue: 50,
   },
   {
     id: 'acousticness',
@@ -47,8 +47,8 @@ const features: FeatureSlider[] = [
     icon: Mic2,
     description: '어쿠스틱 악기 사용 정도',
     min: 0,
-    max: 1,
-    defaultValue: 0.5,
+    max: 100,
+    defaultValue: 50,
   },
   {
     id: 'loudness',
@@ -91,10 +91,10 @@ export function Preferences() {
   const handleContinue = async () => {
     // Store에 preferences 저장
     const payload = {
-      acousticness: featureValues['acousticness'],
-      valence: featureValues['valence'],
-      energy: featureValues['energy'],
-      danceability: featureValues['danceability'],
+      acousticness: featureValues['acousticness']/100,
+      valence: featureValues['valence']/100,
+      energy: featureValues['energy']/100,
+      danceability: featureValues['danceability']/100,
       loudness: featureValues['loudness'],
       tempo: featureValues['tempo'],
     };
