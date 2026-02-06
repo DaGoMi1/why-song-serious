@@ -41,6 +41,11 @@ async def get_current_user(
     )
 
 
+@router.post("/logout")
+async def logout(user_id: int = Depends(get_current_user_id)):
+    """로그아웃 - 클라이언트 측 토큰 삭제 유도"""
+    return {"message": "Successfully logged out"}
+
 # TODO: Spotify OAuth 엔드포인트 (후순위)
 # @router.get("/spotify")
 # @router.get("/spotify/callback")
