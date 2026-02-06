@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.track.service import get_tracks_by_ids
@@ -50,3 +51,34 @@ async def save_as_playlist(
     await db.commit()
     await db.refresh(playlist)
     return playlist
+
+
+async def get_latest_recommendation(
+    db: AsyncSession,
+    user_id: int,
+) -> tuple[list[Track], str] | None:
+    result = await db.execute(
+        select(Playlist)
+        .where(Playlist.user_id == user_id)
+        .order_by(Playlist.created_at.desc())
+        .limit(1)
+    )
+    playlist = result.scalar_one_or_none()
+
+    if not playlist:
+        return None
+
+    pt_result = await db.execute(
+        select(PlaylistTrack)
+        .where(PlaylistTrack.playlist_id == playlist.id)
+        .order_by(PlaylistTrack.position)
+    )
+    playlist_tracks = list(pt_result.scalars().all())
+
+    track_ids = [pt.track_id for pt in playlist_tracks]
+    tracks = await get_tracks_by_ids(db, track_ids)
+
+    track_map = {track.id: track for track in tracks}
+    ordered_tracks = [track_map[tid] for tid in track_ids if tid in track_map]
+
+    return ordered_tracks, playlist.name
