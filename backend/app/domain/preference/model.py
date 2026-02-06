@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, ARRAY, DECIMAL, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from pgvector.sqlalchemy import Vector
 
 from app.database import Base
 
@@ -14,7 +13,7 @@ class UserPreference(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )
-    preference_values: Mapped[list] = mapped_column(Vector(6), nullable=False)
+    preference_values: Mapped[list] = mapped_column(ARRAY(DECIMAL(3, 2)), nullable=False)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
 
     # Relationships
