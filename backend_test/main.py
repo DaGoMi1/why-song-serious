@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 import os
+import uuid
 
 app=FastAPI()
 
@@ -53,7 +54,7 @@ def get_cluster_data():
     data=load_json('clustered_data.json')
     return data
 
-@app.post("/api/search")
+@app.post("/api/tracks/search")
 def recommend_tracks(request: RetrievalRequest):
     print("Received request:", request)
     print("preference:", request.preferences)
@@ -61,3 +62,17 @@ def recommend_tracks(request: RetrievalRequest):
     
     recommended_tracks=data.copy()
     return recommended_tracks[:request.limit]  
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+@app.post("/api/auth/guest", response_model=Token)
+async def login_as_guest():
+    guest_token = f"guest_{uuid.uuid4()}"
+    
+    print(f"✅ 새로운 게스트 토큰 발급됨: {guest_token}")
+    return {
+        "access_token": guest_token,
+        "token_type": "bearer"
+    }

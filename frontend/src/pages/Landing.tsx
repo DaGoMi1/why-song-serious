@@ -76,7 +76,7 @@ export function Landing() {
               <button
                 onClick={handleSpotifyLogin}
                 disabled={isLoading}
-                className="w-full md:w-auto bg-[#1DB954] hover:bg-[#1ed760] disabled:bg-gray-500 disabled:cursor-not-allowed text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+                className="bg-green-500 hover:bg-green-600 disabled:bg-gray-500 disabled:cursor-not-allowed text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
               >
                 {isLoading ? (
                     <>
@@ -86,14 +86,14 @@ export function Landing() {
                 ) : (
                     <>
                         <Music className="size-7" />
-                        시작하기 (Guest)
+                        스포티파이 로그인
                     </>
                 )}
               </button>
 
               <button
                   onClick={handleGuestLogin}
-                  className="flex-1 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+                  className="flex-1 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-teal-900 py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <User className="size-6" />
                   <span>게스트로 시작하기</span>
