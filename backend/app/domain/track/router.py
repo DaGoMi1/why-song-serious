@@ -54,3 +54,4 @@ async def get_track(
         raise NotFoundException("Track not found")
     
     return TrackResponse.model_validate(track)
+
