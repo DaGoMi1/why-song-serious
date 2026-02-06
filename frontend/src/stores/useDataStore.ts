@@ -127,10 +127,10 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
-                    const payload = {selected_tracks: selectedTracks };
+                    const payload = {track_ids: selectedTracks };
 
                     // 추천 요청 시 헤더 추가
-                    const res = await fetch('/api/recommend', {
+                    const res = await fetch('/api/recommendations', {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
