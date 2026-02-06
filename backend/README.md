@@ -76,15 +76,15 @@ backend/
 | ✅     | POST   | `/api/auth/guest`              | Guest 로그인      |
 | 🔜     | GET    | `/api/auth/spotify`            | Spotify OAuth     |
 | 🔜     | GET    | `/api/auth/spotify/callback`   | Spotify 콜백      |
-| 🚧     | POST   | `/api/auth/logout`             | 로그아웃          |
+| ✅     | POST   | `/api/auth/logout`             | 로그아웃          |
 | ✅     | GET    | `/api/auth/me`                 | 현재 유저 정보    |
 | ✅     | GET    | `/api/preferences/latest`      | 최근 취향 조회    |
 | ✅     | POST   | `/api/tracks/search`           | 취향 기반 트랙 검색 |
 | ✅     | GET    | `/api/tracks/{track_id}`       | 트랙 상세 조회    |
 | 🔜     | POST   | `/api/interactions/play`       | 트랙 재생 기록    |
 | 🔜     | POST   | `/api/interactions/select`     | 트랙 선택 기록    |
-| 🚧     | POST   | `/api/recommendations`         | 추천 생성         |
-| 🚧     | GET    | `/api/recommendations/latest`  | 최근 추천 조회    |
+| ✅     | POST   | `/api/recommendations`         | 추천 생성         |
+| ✅     | GET    | `/api/recommendations/latest`  | 최근 추천 조회    |
 | 🔜     | POST   | `/api/playlists`               | 플레이리스트 생성 |
 | 🔜     | GET    | `/api/playlists`               | 플레이리스트 목록 |
 | 🔜     | GET    | `/api/playlists/{playlist_id}` | 플레이리스트 상세 |
