@@ -26,13 +26,13 @@ async def search_tracks(
     1. 사용자 취향(preferences) 저장
     2. 유사한 트랙 검색
     """
-    # AudioFeatures -> 정규화된 list 변환
+    raw_preferences = request.preferences.to_list()
     normalized_preferences = request.preferences.to_normalized_list()
     
-    # 취향 저장
-    preference = await save_user_preference(db, user_id, normalized_preferences)
+    # 취향 저장 (raw 값)
+    preference = await save_user_preference(db, user_id, raw_preferences)
     
-    # 트랙 검색
+    # 트랙 검색 (정규화된 값으로 벡터 검색)
     tracks = await search_tracks_by_preference(db, normalized_preferences, request.limit)
     
     return TrackSearchResponse(
