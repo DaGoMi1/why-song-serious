@@ -1,0 +1,52 @@
+# 전역 설정
+global:
+  random_state: 42
+  device: "cuda"
+  file_name: "prototype_v1"    # 훈련중 최고 성능 모델 저장시 파일 이름에 사용
+  checkpoint_dir: "./checkpoints"
+
+# 데이터 소스 설정
+data:
+  path: "./data/add_feature_v3.csv"
+  test_size: 0.1    # 테스트셋 비율
+  hidden_count: 3   # pid별 검증용으로 제외시킬 곡 수
+
+# 모델 정의
+use: 'deepfm'
+
+models:
+  deepfm:
+    params:
+      embedding_dim: 64
+      hidden_layers: [256, 128, 64]
+      dropout: 0.4
+    features:
+      categorical: ['pid', 'id', 'artists']
+      continuous: ['acousticness', 'valence', 'energy', 'danceability', 'instrumentalness', 'loudness', 'speechiness', 'tempo', 'popularity']
+    train:
+      batch_size: 1024
+      learning_rate: 0.0003
+      weight_decay: 0.00001
+      loss_pos_weight: 5.0
+      optimizer: "Adam"
+      epochs: 20
+      num_negatives: 4      # pos:neg 비율 -> 1:N
+
+  cml:        # 필요에 따라 고치시면 됩니다
+    params:
+      embedding_dim: 64
+      margin: 0.1
+    features:
+      categorical: ['pid', 'id']
+      continuous: []
+    train_params:
+      batch_size: 512
+      learning_rate: 0.001
+      epochs: 50
+
+# 추론
+inference:
+  retrieval:
+    top_k: 2000
+  reranking:
+    top_k: 10
