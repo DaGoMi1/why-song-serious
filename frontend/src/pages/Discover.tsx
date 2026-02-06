@@ -11,7 +11,7 @@ export function Discover() {
   // store서 데이터 가져옴
   const { fetchRetrievals, retrievalTracks = [], isLoading, preferences } = useDataStore();
 
-  const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
+  const [selectedTracks, setSelectedTracks] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function Discover() {
   const endIndex = startIndex + TRACKS_PER_PAGE;
   const currentTracks = retrievalTracks.slice(startIndex, endIndex);
 
-  const toggleTrackSelection = (trackId: string) => {
+  const toggleTrackSelection = (trackId: number) => {
     setSelectedTracks((prev) =>
       prev.includes(trackId)
         ? prev.filter((id) => id !== trackId)
@@ -48,6 +48,9 @@ export function Discover() {
     if (selectedTracks.length > 0) {
       // store에 선택된 트랙들 저장
       console.log(selectedTracks)
+      const payload = {
+        ids: selectedTracks
+      };
       useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
@@ -107,13 +110,13 @@ export function Discover() {
           <div className="divide-y divide-white/5">
             {currentTracks.length > 0 ? (
               currentTracks.map((track, index) => {
-                const isSelected = selectedTracks.includes(track.spotify_track_id);
+                const isSelected = selectedTracks.includes(track.id);
                 const globalIndex = startIndex + index + 1;
 
                 return (
                   <div
                     key={track.spotify_track_id}
-                    onClick={() => toggleTrackSelection(track.spotify_track_id)}
+                    onClick={() => toggleTrackSelection(track.id)}
                     className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${isSelected ? 'bg-teal-500/20' : ''
                       }`}
                   >

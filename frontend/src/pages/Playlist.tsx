@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { Track } from '../types/track';
 import { SpotifyEmbed } from '../components/SpotifyEmbed';
-import { Play, Share2, Download, Music, RefreshCw, Loader2, Pause, CheckCircle2 } from 'lucide-react';
+import { Play, Share2, Download, Music, RefreshCw, Loader2, Pause } from 'lucide-react';
 import {
   RadarChart,
   PolarGrid,
@@ -78,7 +78,6 @@ export function Playlist() {
     recommendedTracks,
     clusterData,
     fetchRecommendations,
-    preferences,
     selectedTracks,
     retrievalTracks,
     playlistExplanation,
@@ -89,7 +88,7 @@ export function Playlist() {
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
     if (recommendedTracks.length === 0 || !playlistExplanation) {
-      fetchRecommendations(preferences!, selectedTracks);
+      fetchRecommendations(selectedTracks);
     }
   }, [fetchRecommendations, recommendedTracks.length, playlistExplanation])
 
@@ -101,11 +100,12 @@ export function Playlist() {
 
   console.log(selectedTracks)
   console.log(retrievalTracks)
+
   // retrievalTracks에서 ID가 selectedTracks에 포함된 곡들만 필터링
   const selectedSeedTracks = useMemo(() => {
     if (!retrievalTracks || !selectedTracks) return [];
     return retrievalTracks.filter((track: any) => 
-      selectedTracks.includes(track.spotify_track_id)
+      selectedTracks.includes(track.id)
     );
   }, [retrievalTracks, selectedTracks]);
   

@@ -21,9 +21,9 @@ interface DataState {
     // preferences 저장
     setPreferences: (prefs: Preferences) => void; 
 
-    selectedTracks: string[];
+    selectedTracks: number[];
     // discover에서 선택한 트랙들 저장
-    setSelectedTracks: (tracks: string[]) => void;
+    setSelectedTracks: (tracks: number[]) => void;
 
     retrievalTracks: any[];
     recommendedTracks: any[];
@@ -36,7 +36,7 @@ interface DataState {
     loginAsGuest: () => Promise<void>;
 
     fetchRetrievals: (prefs: Preferences) => Promise<void>;
-    fetchRecommendations: (prefs: Preferences, tracks: string[]) => Promise<void>;
+    fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
     reset: () => void;
 }
 
@@ -119,7 +119,7 @@ export const useDataStore = create<DataState>()(
             },
 
             // preferences와 선택된 트랙들을 전달하고 추천 결과를 받아옴
-            fetchRecommendations: async (prefs, tracks) => {
+            fetchRecommendations: async (selectedTracks) => {
                 set({ isLoading: true, error: null });
                 try {
                     const token = get().accessToken;
@@ -127,7 +127,7 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
-                    const payload = { ...prefs, selected_tracks: tracks };
+                    const payload = {selected_tracks: selectedTracks };
 
                     // 추천 요청 시 헤더 추가
                     const res = await fetch('/api/recommend', {
