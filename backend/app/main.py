@@ -45,6 +45,9 @@ app.include_router(preference_router)
 from app.domain.recommendation.router import router as recommendation_router
 app.include_router(recommendation_router)
 
+from app.domain.interaction.router import router as interaction_router
+app.include_router(interaction_router)
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
