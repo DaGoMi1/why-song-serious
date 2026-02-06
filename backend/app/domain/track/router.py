@@ -10,6 +10,7 @@ from app.domain.track.service import (
     search_tracks_by_preference,
     get_track_by_id,
 )
+from app.domain.interaction.service import save_search_interactions
 
 router = APIRouter(prefix="/tracks", tags=["tracks"])
 
@@ -22,18 +23,23 @@ async def search_tracks(
 ):
     """
     취향 기반 트랙 검색
-    
+
     1. 사용자 취향(preferences) 저장
     2. 유사한 트랙 검색
+    3. 검색 결과 인터랙션 기록
     """
     raw_preferences = request.preferences.to_list()
     normalized_preferences = request.preferences.to_normalized_list()
-    
+
     # 취향 저장 (raw 값)
     preference = await save_user_preference(db, user_id, raw_preferences)
-    
+
     # 트랙 검색 (정규화된 값으로 벡터 검색)
     tracks = await search_tracks_by_preference(db, normalized_preferences, request.limit)
+
+    # 검색 결과 인터랙션 기록
+    await save_search_interactions(db, user_id, [track.id for track in tracks])
+    await db.commit()
     
     return TrackSearchResponse(
         preference_id=preference.id,

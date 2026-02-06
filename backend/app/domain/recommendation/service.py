@@ -5,6 +5,7 @@ from app.domain.track.service import get_tracks_by_ids
 from app.domain.track.model import Track
 from app.domain.playlist.model import Playlist, PlaylistTrack
 from app.domain.recommendation.strategy import run_embedding_pipeline
+from app.domain.interaction.service import mark_as_selected
 from app.common.exceptions import BadRequestException
 
 
@@ -25,6 +26,7 @@ async def create_recommendation(
         db, input_tracks, RECOMMENDATION_COUNT
     )
 
+    await mark_as_selected(db, user_id, track_ids)
     await save_as_playlist(db, user_id, description, recommended)
 
     return recommended, description
