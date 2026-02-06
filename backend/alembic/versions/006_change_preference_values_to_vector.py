@@ -33,4 +33,3 @@ def downgrade() -> None:
         'user_preferences',
         sa.Column('preference_values', sa.ARRAY(sa.DECIMAL(precision=3, scale=2)), nullable=False)
     )
-
