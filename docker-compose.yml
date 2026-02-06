@@ -1,0 +1,41 @@
+services:
+  backend:
+    image: gsmin02/wss-backend:v2
+    container_name: wss-backend
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file:
+      - .env
+    logging: &default-logging
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: gsmin02/wss-frontend:v2
+    container_name: wss-frontend
+    ports:
+      - "5173:5173"
+    restart: always
+    logging: *default-logging
+  
+  ai:
+    image: gsmin02/wss-ai:v1
+    container_name: wss-ai
+    ports:
+      - "8001:8001"
+    restart: always
+    logging: *default-logging
+
+  nginx:
+    image: gsmin02/wss-nginx:v1
+    container_name: wss-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+    logging: *default-logging
