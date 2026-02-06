@@ -12,4 +12,3 @@ async def get_latest_preference(db: AsyncSession, user_id: int) -> UserPreferenc
         .limit(1)
     )
     return result.scalar_one_or_none()
-
