@@ -39,6 +39,12 @@ app.include_router(auth_router)
 from app.domain.track.router import router as track_router
 app.include_router(track_router)
 
+from app.domain.preference.router import router as preference_router
+app.include_router(preference_router)
+
+from app.domain.recommendation.router import router as recommendation_router
+app.include_router(recommendation_router)
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
