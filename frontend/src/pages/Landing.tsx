@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { Music, Sparkles, BarChart3, ListMusic, Loader2 } from 'lucide-react'; 
+import { Music, Sparkles, BarChart3, ListMusic, Loader2, User } from 'lucide-react'; 
 import { useDataStore } from '../stores/useDataStore';
 
 export function Landing() {
@@ -14,6 +14,10 @@ export function Landing() {
       console.error('Login failed:', error);
       alert('로그인에 실패했습니다.');
     }
+  };
+
+  const handleGuestLogin = () => {
+    navigate('/preferences');
   };
 
   return (
@@ -60,6 +64,14 @@ export function Landing() {
                     </>
                 )}
               </button>
+
+              <button
+                  onClick={handleGuestLogin}
+                  className="flex-1 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <User className="size-6" />
+                  <span>게스트로 시작하기</span>
+                </button>
             </div>
 
             {/* Right: Features */}
