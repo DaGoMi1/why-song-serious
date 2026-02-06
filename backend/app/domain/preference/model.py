@@ -19,4 +19,3 @@ class UserPreference(Base):
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="preferences")
-
