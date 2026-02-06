@@ -19,4 +19,3 @@ class PreferenceResponse(BaseModel):
                 ),
             }
         return data
-
