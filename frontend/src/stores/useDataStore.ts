@@ -65,13 +65,19 @@ export const useDataStore = create<DataState>()(
                     const res = await fetch('/api/auth/guest', {
                         method: 'POST',
                     });
-                    
                     if (!res.ok) {
                         throw new Error('로그인 실패');
                     }
 
                     const data = await res.json();
-                    set({ accessToken: data.access_token, isLoading: false });
+                    set({ 
+                        accessToken: data.access_token, 
+                        preferences: null,
+                        selectedTracks: [],
+                        retrievalTracks: [],
+                        recommendedTracks: [],
+                        isLoading: false 
+                    });
                 } catch (err) {
                     set({ error: "로그인 실패", isLoading: false });
                     throw err;
@@ -127,7 +133,10 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
-                    const payload = {selected_tracks: selectedTracks };
+                    const payload = {
+                        "inference_type": "string",
+                        "track_ids": selectedTracks 
+                    };
 
                     // 추천 요청 시 헤더 추가
                     const res = await fetch('/api/recommend', {

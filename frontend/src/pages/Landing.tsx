@@ -8,7 +8,13 @@ export function Landing() {
 
   const handleSpotifyLogin = async () => {
     try {
+      // 우선 게스트 로그인으로 처리 
+      localStorage.removeItem('isGuest');
+      localStorage.removeItem('login_type');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('nickname');
       await loginAsGuest();
+      
       navigate('/preferences');
     } catch (error) {
       console.error('Login failed:', error);
@@ -16,8 +22,28 @@ export function Landing() {
     }
   };
 
-  const handleGuestLogin = () => {
-    navigate('/preferences');
+  const handleGuestLogin = async () => {
+    // 게스트용 ID 생성
+    const guestId = crypto.randomUUID(); 
+
+    // 랜덤 닉네임 생성
+    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const nickname = `Guest_${randomNum}`;
+
+    localStorage.setItem('login_type', 'guest');     
+    localStorage.setItem('user_id', guestId);        
+    localStorage.setItem('nickname', nickname);      
+    localStorage.setItem('isGuest', 'true');
+
+    // 백엔드에 요청 
+    try {
+        
+        console.log(`Guest Login Info: ${nickname} (${guestId})`);
+        navigate('/preferences');
+    } catch (e) {
+        console.error("Guest login failed", e);
+        alert("게스트 로그인 중 오류가 발생했습니다.");
+    }
   };
 
   return (
