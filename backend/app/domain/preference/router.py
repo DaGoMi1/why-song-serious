@@ -22,3 +22,4 @@ async def get_latest_user_preference(
         raise NotFoundException("No preference found")
 
     return preference
+
