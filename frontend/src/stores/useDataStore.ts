@@ -145,16 +145,11 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
-<<<<<<< HEAD
-                    const payload = {track_ids: selectedTracks };
-
-=======
                     const payload = {
                         "inference_type": "string",
                         "track_ids": selectedTracks 
                     };
                     
->>>>>>> fe/deploy
                     // 추천 요청 시 헤더 추가
                     const res = await fetch('/api/recommendations', {
                         method: 'POST',
