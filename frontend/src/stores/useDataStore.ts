@@ -28,6 +28,13 @@ interface RecommendationResponse {
     description: string;
 }
 
+interface GuestLoginResponse {
+  access_token: string;
+  token_type: string;
+  user_id: number;
+  nickname: string;
+}
+
 interface DataState {
     preferences: audioFeatures | null;
     // preferences 저장
@@ -84,12 +91,25 @@ export const useDataStore = create<DataState>()(
                 try {
                     const res = await fetch('/api/auth/guest', {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     });
+
                     if (!res.ok) {
                         throw new Error('로그인 실패');
                     }
 
-                    const data = await res.json();
+                    const data: GuestLoginResponse = await res.json();
+                    
+                    console.log("Guest Login Success:", data);
+
+                    localStorage.setItem('login_type', 'guest');
+                    localStorage.setItem('isGuest', 'true');
+                    localStorage.setItem('user_id', data.user_id.toString()); 
+                    localStorage.setItem('nickname', data.nickname);
+                    localStorage.setItem('access_token', data.access_token);
+
                     set({ 
                         accessToken: data.access_token, 
                         preferences: null,
@@ -99,6 +119,7 @@ export const useDataStore = create<DataState>()(
                         isLoading: false 
                     });
                 } catch (err) {
+                    console.error(err);
                     set({ error: "로그인 실패", isLoading: false });
                     throw err;
                 }
@@ -149,6 +170,10 @@ export const useDataStore = create<DataState>()(
 
             // preferences와 선택된 트랙들을 전달하고 추천 결과를 받아옴
             fetchRecommendations: async (selectedTracks) => {
+                if (!selectedTracks || selectedTracks.length === 0) {
+                    console.warn("선택된 트랙이 없어 추천 요청을 중단합니다.");
+                    return;
+                }
                 set({ isLoading: true, error: null });
                 try {
                     const token = get().accessToken;
@@ -170,6 +195,12 @@ export const useDataStore = create<DataState>()(
                         },
                         body: JSON.stringify(payload),
                     });
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        console.error("추천 API 에러:", errorData);
+                        set({ error: "추천 실패", isLoading: false });
+                        return; // 🚨 여기서 끊어야 아래 .map()에서 에러가 안 납니다!
+                    }
                     const data: RecommendationResponse = await res.json();
                     const cleanedTracks = data.tracks.map((track: Track) => ({
                         ...track,
