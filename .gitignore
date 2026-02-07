@@ -184,6 +184,7 @@ venv.bak/
 .spyderproject
 .spyproject
 
+<<<<<<< HEAD
 # Rope project settings
 .ropeproject
 
@@ -299,5 +300,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/react,redis,venv,python,windows,linux,macos,visualstudiocode
+=======
+# 주피터 노트북 체크포인트 (데이터 분석 등)
+.ipynb_checkpoints/
+>>>>>>> fe/main
 
 backend_test/

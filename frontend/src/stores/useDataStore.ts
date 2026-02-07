@@ -146,7 +146,7 @@ export const useDataStore = create<DataState>()(
                     }
 
                     const payload = {
-                        "inference_type": "string",
+                        "inference_type": "embedding",
                         "track_ids": selectedTracks 
                     };
                     
