@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Play, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Play, Check, ChevronLeft, ChevronRight, Loader2, Pause } from 'lucide-react';
 import { useDataStore } from '../stores/useDataStore';
+import { SpotifyEmbed } from '../components/SpotifyEmbed';
 
 const TRACKS_PER_PAGE = 10;
 
@@ -14,14 +15,17 @@ export function Discover() {
   const [selectedTracks, setSelectedTracks] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // 🎵 재생 관련 State
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
+
   useEffect(() => {
     const initFetch = async () => {
       if (preferences) {
-        console.log("fetch retrieval")
+        // console.log("fetch retrieval")
         await fetchRetrievals(preferences);
-        console.log("fetch retrieval end")
+        // console.log("fetch retrieval end")
       } else {
-        console.log("no preferences")
+        // console.log("no preferences")
         alert("preferences 정보가 없습니다.");
         navigate('/preferences');
       }
@@ -36,6 +40,32 @@ export function Discover() {
   const endIndex = startIndex + TRACKS_PER_PAGE;
   const currentTracks = retrievalTracks.slice(startIndex, endIndex);
 
+  // 🎵 현재 재생 중인 트랙 ID
+  const currentTrackId = currentTrackIndex !== null 
+    ? retrievalTracks[currentTrackIndex]?.spotify_track_id 
+    : null;
+
+  // 🎵 트랙 재생 함수
+  const playTrack = (globalIndex: number) => {
+    if (currentTrackIndex === globalIndex) {
+      setCurrentTrackIndex(null); 
+    } else {
+      setCurrentTrackIndex(globalIndex);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentTrackIndex !== null && currentTrackIndex < retrievalTracks.length - 1) {
+      setCurrentTrackIndex(currentTrackIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentTrackIndex !== null && currentTrackIndex > 0) {
+      setCurrentTrackIndex(currentTrackIndex - 1);
+    }
+  };
+
   const toggleTrackSelection = (trackId: number) => {
     setSelectedTracks((prev) =>
       prev.includes(trackId)
@@ -46,11 +76,9 @@ export function Discover() {
 
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
-      // store에 선택된 트랙들 저장
-      // console.log(selectedTracks)
       if (selectedTracks.length < 3) {
         alert("최소 3곡 이상 선택해야 플레이리스트를 생성할 수 있습니다.");
-        return; // 함수 강제 종료
+        return; 
       }
       useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
@@ -62,7 +90,6 @@ export function Discover() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 로딩 중 화면
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
@@ -81,7 +108,6 @@ export function Discover() {
             당신을 위한 추천 음악
           </h1>
           <p className="text-white/80 mb-4">
-            {/* mockTracks.length -> tracks.length */}
             총 {retrievalTracks.length}개의 트랙 • 마음에 드는 곡을 선택하면 맞춤 플레이리스트를 만들어드립니다
           </p>
           {selectedTracks.length > 0 && (
@@ -102,9 +128,7 @@ export function Discover() {
           <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-white/5 border-b border-white/10 text-sm text-white/60">
             <div className="col-span-1 text-center">#</div>
             <div className="col-span-5">제목</div>
-            {/* <div className="col-span-3">앨범</div> */}
             <div className="col-span-1">BPM</div>
-            {/* <div className="col-span-1 text-center">시간</div> */}
           </div>
 
           {/* Track Rows */}
@@ -112,47 +136,55 @@ export function Discover() {
             {currentTracks.length > 0 ? (
               currentTracks.map((track, index) => {
                 const isSelected = selectedTracks.includes(track.id);
-                const globalIndex = startIndex + index + 1;
+                const globalIndex = startIndex + index; 
+                const displayIndex = globalIndex + 1;
+                const isPlaying = currentTrackIndex === globalIndex;
 
                 return (
                   <div
                     key={track.id}
                     onClick={() => toggleTrackSelection(track.id)}
                     className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${isSelected ? 'bg-teal-500/20' : ''
-                      }`}
+                      } ${isPlaying ? 'bg-white/10' : ''}`} 
                   >
-                    {/* Index / Play Button */}
+                    {/* Index / Check / Play Button */}
                     <div className="col-span-12 md:col-span-1 flex md:justify-center items-center">
-                      <div className="relative flex items-center gap-3 md:block">
                         {isSelected ? (
-                          <div className="bg-teal-400 rounded-md size-10 md:size-8 flex items-center justify-center">
-                            <Check className="size-5 md:size-4 text-slate-900" />
+                          // ✅ 선택된 상태: 체크 아이콘 표시
+                          <div className="bg-teal-400 rounded-md size-8 flex items-center justify-center">
+                            <Check className="size-5 text-slate-900" />
                           </div>
                         ) : (
+                          // ✅ 선택 안 된 상태: Playlist.tsx 스타일 적용
+                          // (평소엔 숫자, 호버시 재생 버튼)
                           <>
-                            <span className="text-white/40 group-hover:hidden text-sm md:text-base w-10 md:w-8 text-center">
-                              {globalIndex}
-                            </span>
-                            <Play className="hidden group-hover:block text-white size-10 md:size-8 fill-white" />
+                             {/* 1. 숫자 인덱스 (호버되거나 재생 중이면 숨김) */}
+                             <div className={`text-white/40 w-8 text-center text-sm md:text-base ${isPlaying ? 'hidden' : 'group-hover:hidden'}`}>
+                                {displayIndex}
+                             </div>
+
+                             {/* 2. 재생 버튼 (호버되거나 재생 중이면 보임) */}
+                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // 선택 방지
+                                    playTrack(globalIndex);
+                                }}
+                                className={`${isPlaying ? 'block' : 'hidden group-hover:block'}`}
+                             >
+                                {isPlaying ? (
+                                    <Pause className="size-8 text-teal-400 fill-teal-400" />
+                                ) : (
+                                    <Play className="size-8 text-white fill-white" />
+                                )}
+                             </button>
                           </>
                         )}
-                        {/* <img
-                          src={track.image_url}
-                          alt={track.name}
-                          className="md:hidden size-12 rounded-lg object-cover"
-                        /> */}
-                      </div>
                     </div>
 
                     {/* Title & Artist */}
                     <div className="col-span-12 md:col-span-5 flex items-center gap-4">
-                      {/* <img
-                        src={track.image_url}
-                        alt={track.name}
-                        className="hidden md:block size-12 rounded-lg object-cover"
-                      /> */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white truncate">
+                        <div className={`font-semibold truncate ${isPlaying ? 'text-teal-400' : 'text-white'}`}>
                           {track.name}
                         </div>
                         <div className="text-sm text-white/60 truncate">
@@ -161,22 +193,11 @@ export function Discover() {
                       </div>
                     </div>
 
-                    {/* Album */}
-                    {/* <div className="col-span-6 md:col-span-3 flex items-center">
-                      <span className="text-white/70 truncate text-sm md:text-base">
-                        {track.album}
-                      </span>
-                    </div> */}
-
                     {/* Tempo */}
                     <div className="hidden md:flex col-span-1 items-center">
                       <span className="text-white/70 text-sm">{track.audio_features.tempo}</span>
                     </div>
 
-                    {/* Duration */}
-                    {/* <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
-                      <span className="text-white/40 text-sm">{track.duration_ms}</span>
-                    </div> */}
                   </div>
                 );
               })
@@ -231,7 +252,7 @@ export function Discover() {
 
       {/* Bottom Action Bar */}
       {selectedTracks.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent p-4 md:p-6 border-t border-white/10">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent p-4 md:p-6 border-t border-white/10 "> 
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div className="text-white">
               <p className="font-bold">{selectedTracks.length}개 선택됨</p>
@@ -244,12 +265,10 @@ export function Discover() {
             
             <button
               onClick={handleCreatePlaylist}
-              // 3곡 미만이면 버튼을 회색으로 바꾸고 싶다면 아래 주석 해제 및 클래스 수정
-              // disabled={selectedTracks.length < 3} 
               className={`px-8 py-4 rounded-full font-bold shadow-xl transition-all duration-300 ${
                 selectedTracks.length < 3
-                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed' // 3곡 미만일 때 스타일
-                  : 'bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:shadow-2xl hover:scale-105' // 3곡 이상일 때 스타일
+                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:shadow-2xl hover:scale-105'
               }`}
             >
               {selectedTracks.length < 3 ? '곡을 더 선택해주세요' : '플레이리스트 생성'}
@@ -257,6 +276,20 @@ export function Discover() {
           </div>
         </div>
       )}
+
+      {/* 🎵 하단 Spotify Player */}
+      <div 
+        className={`fixed left-0 right-0 transition-all duration-300 z-50 bottom-[90px]`}
+      >
+        <SpotifyEmbed 
+          trackId={currentTrackId} 
+          onClose={() => setCurrentTrackIndex(null)}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          hasNext={currentTrackIndex !== null && currentTrackIndex < retrievalTracks.length - 1}
+          hasPrev={currentTrackIndex !== null && currentTrackIndex > 0}
+        />
+      </div>
     </div>
   );
 }
