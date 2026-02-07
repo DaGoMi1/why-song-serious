@@ -43,17 +43,11 @@ def load_json(filename):
 def read_root():
     return {"message": "Backend is Running"}
 
-@app.post("/api/recommend")
+@app.post("/api/recommendations")
 def get_tracks():
     data=load_json('tracks_recommend.json')
     explanation_data = load_json('playlist_explanation.json')
-    return {"tracks": data, "explanation": explanation_data}
-
-@app.post("/api/recommendation/ai")
-def get_tracks():
-    status= "success"
-    data=load_json('tracks_recommend.json')
-    return {"tracks": data, "explanation": explanation_data}
+    return {"tracks": data, "description": explanation_data}
 
 @app.get("/api/cluster")
 def get_cluster_data():
@@ -62,12 +56,21 @@ def get_cluster_data():
 
 @app.post("/api/tracks/search")
 def recommend_tracks(request: RetrievalRequest):
+    # DB에 preference 저장
+    # 일단 임시 아이디 사용
+    generated_preference_id = 123
     print("Received request:", request)
     print("preference:", request.preferences)
     data=load_json('tracks_retrieval.json')
     
     recommended_tracks=data.copy()
-    return recommended_tracks[:request.limit]  
+
+    response= {
+        "preference_id": generated_preference_id, 
+        "tracks": recommended_tracks
+    }
+
+    return response
 
 class Token(BaseModel):
     access_token: str

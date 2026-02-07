@@ -80,18 +80,18 @@ export function Playlist() {
     fetchRecommendations,
     selectedTracks,
     retrievalTracks,
-    playlistExplanation,
+    description,
     isLoading,
     reset,
   } = useDataStore();
 
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
-    if (recommendedTracks.length === 0 || !playlistExplanation) {
+    if (recommendedTracks.length === 0 || !description) {
       fetchRecommendations(selectedTracks);
     }
-  }, [fetchRecommendations, recommendedTracks.length, playlistExplanation])
-
+  }, [fetchRecommendations, recommendedTracks.length, description])
+  console.log(recommendedTracks)
   useEffect(() => {
     if (recommendedTracks.length === 0) return;
     // 추천된 트랙 로드
@@ -105,10 +105,10 @@ export function Playlist() {
   const selectedSeedTracks = useMemo(() => {
     if (!retrievalTracks || !selectedTracks) return [];
     return retrievalTracks.filter((track: any) => 
-      selectedTracks.includes(track.id)
+      selectedTracks.includes(track.spotify_track_id)
     );
   }, [retrievalTracks, selectedTracks]);
-  
+
   // 개별 곡 클릭
   const playTrack = (index: number, type: 'selected' | 'recommended') => {
     if (currentTrackIndex === index && activeContext === type) {
@@ -176,7 +176,7 @@ export function Playlist() {
   };
 
   // audio features 계산
-  const audioFeatures = useMemo(() => {
+  const AudioFeatures = useMemo(() => {
     if (playlistTracks.length === 0) return [
       { feature: 'Energy', value: 0 },
       { feature: 'Dance', value: 0 },
@@ -202,7 +202,7 @@ export function Playlist() {
       loudness: 0,
       tempo: 0
     });
-
+    
     // loudness 정규화
     const normalizeLoudness = (avgLoudness: number) => {
       const avgDb = avgLoudness;
@@ -250,130 +250,180 @@ export function Playlist() {
     }
   }
 
-  // echart용 데이터 포맷팅 및 거리 정규화
-  const formattedClusterData = useMemo(() => {
-    if (!clusterData || !Array.isArray(clusterData) || clusterData.length === 0) return [];
+  const { backgroundData, highlightData } = useMemo(() => {
+    if (!clusterData || !Array.isArray(clusterData) || clusterData.length === 0) {
+        return { backgroundData: [], highlightData: [] };
+    }
 
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
+    // 추천된 트랙의 ID 목록 (Set으로 빠른 조회)
+    const recommendedIds = new Set(playlistTracks.map(track => track.spotify_track_id));
+
+    const bg: any[] = [];
+    const hl: any[] = [];
 
     clusterData.forEach((item: any) => {
-      if (item.emb1 < minX) minX = item.emb1;
-      if (item.emb1 > maxX) maxX = item.emb1;
-      if (item.emb2 < minY) minY = item.emb2;
-      if (item.emb2 > maxY) maxY = item.emb2;
-    });
-
-    // 분모가 0이 되지 않도록 함
-    const rangeX = maxX - minX || 1;
-    const rangeY = maxY - minY || 1;
-
-    return clusterData.map((item: any) => {
-      const normalizedX = 5 + ((item.emb1 - minX) / rangeX) * 90;
-      const normalizedY = 5 + ((item.emb2 - minY) / rangeY) * 90;
-
-      return [
-        normalizedX,
-        normalizedY,
-        item.cluster_number,
-        item.id
+      const dataPoint = [
+        item.emb1,
+        item.emb2,
+        item.id,
+        item.cluster_number, // cluster_number -> cluster
       ];
+
+      if (recommendedIds.has(item.id)) {
+        hl.push(dataPoint);
+      } else {
+        bg.push(dataPoint);
+      }
     });
-  }, [clusterData]);
+    return { backgroundData: bg, highlightData: hl };
+  }, [clusterData, playlistTracks]);
+
 
   // echart
   const getClusterChartOption = () => {
+    const calculateMin = (value: { min: number; max: number }) => {
+      const range = value.max - value.min;
+      const padding = range * 0.1; // 데이터 범위의 10%
+      return value.min - padding;  // 최소값보다 10% 더 작게 설정 (음수도 정상 작동)
+    };
+
+    const calculateMax = (value: { min: number; max: number }) => {
+      const range = value.max - value.min;
+      const padding = range * 0.1;
+      return value.max + padding;  // 최대값보다 10% 더 크게 설정
+    };
     return {
       backgroundColor: 'transparent',
-      grid: { left: 20, right: 20, top: 20, bottom: 20 },
+      grid: { left: 10, right: 10, top: 10, bottom: 10 },
       tooltip: {
         trigger: 'item',
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        borderColor: '#555',
+        backgroundColor: 'rgba(20, 20, 25, 0.95)',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        padding: 12,
         textStyle: { color: '#fff' },
         formatter: (params: any) => {
+          
+          let itemData = params.data;
 
-          // zoom level에 따라 툴팁 내용을 동적으로 변경
-          const zoomLevel = zoomLevelRef
-          const clusterIndex = params.data[2] + 1;
+          if (!itemData || !Array.isArray(itemData)) {
+            if (params.seriesName === 'Background') {
+              itemData = backgroundData[params.dataIndex];
+            } else if (params.seriesName === 'Highlight') {
+              itemData = highlightData[params.dataIndex];
+            }
+          }
+          
+          if (!itemData) return '';
+
+          const zoomLevel = zoomLevelRef.current;
+          
+          const clusterNum = itemData[3];
+          const clusterIndex = (typeof clusterNum === 'number' ? clusterNum : -1) + 1;
+          const trackId = itemData[2];
+          
           const clusterInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
-          const trackId = params.data[3];
+          const colorHex = clusterInfo?.border || '#ccc';
 
-          // zoomLevel<3이면 클러스터 정보만 보여줌
-          if (zoomLevel.current < 3) {
+          if (zoomLevel < 3 && params.seriesName !== 'Highlight') { 
             return `
-              <div style="font-weight: bold; margin-bottom: 4px; color: ${clusterInfo?.border || 'white'}">
-                ${clusterIndex || 'Unknown Group'}
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${colorHex};"></div>
+                <span style="font-weight: bold; font-size: 14px;">Group ${clusterIndex}</span>
               </div>
-              <div style="font-size: 11px; color: #ccc;">
-                확대해보세요
+              <div style="margin-top: 4px; font-size: 12px; color: #aaa;">
+                ${clusterInfo?.name || 'Cluster'}
               </div>
             `;
           } else {
-            // zoomLevel>=3이면 개별 곡 정보를 보여줌
             return `
                <div style="text-align: left;">
-                <div style="font-size: 10px; color: #aaa; margin-bottom: 2px;">Track Info</div>
-                <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">
-                  Track #${trackId}
+                <div style="font-size: 10px; color: ${colorHex}; margin-bottom: 4px;">● ${clusterInfo?.name || 'Group ' + clusterIndex}</div>
+                <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px; color: white;">
+                  ${trackId}
                 </div>
-                <div style="color: ${clusterInfo?.border}; font-size: 11px;">
-                  ${clusterInfo?.name}
+                <div style="font-size: 13px; color: #ccc;">
+                  ${trackId}
                 </div>
+                ${params.seriesName === 'Highlight' ? '<div style="margin-top:6px; font-size:11px; color:#fff; font-weight:bold; border-top:1px solid #444; padding-top:4px;">✨ Recommended for You</div>' : ''}
               </div>
             `;
           }
         }
       },
-      xAxis: { type: 'value', show: false, scale: true },
-      yAxis: { type: 'value', show: false, scale: true },
+      xAxis: { 
+        type: 'value', 
+        min: calculateMin, 
+        max: calculateMax,
+        show: false, 
+        splitLine: { show: false } 
+      },
+      yAxis: { 
+        type: 'value', 
+        min: calculateMin, 
+        max: calculateMax,
+        show: false, 
+        splitLine: { show: false } 
+      },
       dataZoom: [
         {
           type: 'inside',
           xAxisIndex: [0],
-          filterMode: 'empty',
+          minSpan: 5,
           maxSpan: 100,
-          minSpan: 12.5,
-          zoomOnMouseWheel: true,
-          moveOnMouseMove: true,
-          moveOnMouseWheel: false,
-        }, {
+        }, 
+        {
           type: 'inside',
           yAxisIndex: [0],
-          filterMode: 'empty',
-          maxspan: 100,
-          minSpan: 12.5,
-          zoomOnMouseWheel: true,
-          moveOnMouseMove: true,
-          moveOnMouseWheel: true,
+          minSpan: 5,
+          maxSpan: 100,
         },
       ],
-      animation: false,
-      animationDuration: 0,
       series: [
         {
+          name: 'Background',
           type: 'scatter',
-          symbolSize: 3,
-
-          // 데이터 연결
-          data: formattedClusterData,
-
+          symbolSize: 3, 
+          data: backgroundData,
           itemStyle: {
-            // 클러스터 ID에 따라 색상 자동 지정
             color: (params: any) => {
-              const clusterIndex = params.data[2] + 1;
-              const colorInfo = clusterColors[clusterIndex as keyof typeof clusterColors];
-              return colorInfo?.border || '#ccc'; // 매칭 안되면 회색
+              // 데이터 찾기
+              let cNum = -1;
+              if (params.data && Array.isArray(params.data)) {
+                cNum = params.data[3];
+              } else {
+                const d = backgroundData[params.dataIndex];
+                if (d) cNum = d[3];
+              }
+
+              const cIndex = (typeof cNum === 'number' ? cNum : -1) + 1;
+              return clusterColors[cIndex as keyof typeof clusterColors]?.border || '#555';
             },
-            opacity: 0.8,
-            shadowBlur: 10,
-            shadowColor: 'rgba(0,0,0,0.3)'
+            opacity: 0.6, 
+          },
+          large: false, 
+          largeThreshold: 2000, 
+        },
+        // 2. 강조용: 하얀색 고정
+        {
+          name: 'Highlight',
+          type: 'scatter', 
+          symbolSize: 14, 
+          data: highlightData,
+          z: 10, 
+          itemStyle: {
+            color: '#ffffff', 
+            opacity: 1,
+            shadowBlur: 20,    
+            shadowColor: '#ffffff', 
+            borderColor: '#ffffff',
+            borderWidth: 2
           },
           emphasis: {
             scale: 1.5,
             itemStyle: {
-              shadowBlur: 15,
-              shadowColor: 'white'
+              shadowBlur: 30,
+              shadowColor: '#4fd1c5' 
             }
           }
         }
@@ -450,7 +500,7 @@ export function Playlist() {
               음악 특성 분석
             </h2>
             <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={audioFeatures}>
+              <RadarChart data={AudioFeatures}>
                 <PolarGrid stroke="#ffffff40" />
                 <PolarAngleAxis
                   dataKey="feature"
@@ -471,7 +521,7 @@ export function Playlist() {
               </RadarChart>
             </ResponsiveContainer>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              {audioFeatures.map((feature) => (
+              {AudioFeatures.map((feature) => (
                 <div key={feature.feature} className="text-sm">
                   <div className="flex justify-between text-white/80 mb-1">
                     <span>{feature.feature}</span>
@@ -519,8 +569,8 @@ export function Playlist() {
             플레이리스트 설명
           </h2>
           <div className="bg-gradient-to-br from-blue-500/20 to-teal-500/20 rounded-xl p-4">
-            <div className="text-white text-xl font-bold">{playlistExplanation?.name || "분석 중..."}</div>
-            <p className="text-white/60 text-sm mt-2">{playlistExplanation?.description || "데이터를 불러오는 중입니다."}</p>
+            <div className="text-white text-xl font-bold">{description || "분석 중..."}</div>
+            <p className="text-white/60 text-sm mt-2">{description|| "데이터를 불러오는 중입니다."}</p>
           </div>
         </div>
 
@@ -535,7 +585,7 @@ export function Playlist() {
                 const isPlaying = currentTrackIndex === index && activeContext === 'selected';
                 return (
                   <div
-                    key={`seed-${track.id}`}
+                    key={`seed-${track.spotify_track_id}`}
                     className={`flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-pointer group ${isPlaying ? 'bg-white/10' : ''
                       }`}
                     onClick={() => playTrack(index, 'selected')}

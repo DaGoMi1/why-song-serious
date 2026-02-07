@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Preferences } from '../pages/Preferences';
 
-interface Preferences {
+interface audioFeatures {
     energy: number;
     valence: number;
     danceability: number;
@@ -11,41 +10,27 @@ interface Preferences {
     tempo: number;
 }
 
-interface PlaylistExplanation {
+export interface Track {
+    id: number;
+    spotify_track_id: string;
     name: string;
+    artist: string;
+    album: string;
+    duration_ms: number;
+    popularity: number;
+    image_url: string;
+    audio_features: audioFeatures;
+}
+
+interface RecommendationResponse {
+    tracks: Track[];
     description: string;
 }
 
-export interface AudioFeatures {
-  acousticness: number;
-  valence: number;
-  energy: number;
-  danceability: number;
-  loudness: number;
-  tempo: number;
-}
-
-export interface Track {
-  id: number;
-  spotify_track_id: string;
-  name: string;
-  artist: string;
-  album: string;
-  duration_ms: number;
-  popularity: number;
-  image_url: string;
-  audio_features: AudioFeatures;
-}
-
-interface RetrievalResponse {
-  preference_id: number;
-  tracks: Track[];
-}
-
 interface DataState {
-    preferences: Preferences | null;
+    preferences: audioFeatures | null;
     // preferences 저장
-    setPreferences: (prefs: Preferences) => void; 
+    setPreferences: (prefs: audioFeatures) => void; 
 
     selectedTracks: number[];
     // discover에서 선택한 트랙들 저장
@@ -53,7 +38,7 @@ interface DataState {
 
     retrievalTracks: any[];
     recommendedTracks: any[];
-    playlistExplanation: PlaylistExplanation | null;
+    description: string | null;
     clusterData: any[];
     isLoading: boolean;
     error: string | null;
@@ -61,7 +46,7 @@ interface DataState {
     accessToken: string | null;
     loginAsGuest: () => Promise<void>;
 
-    fetchRetrievals: (prefs: Preferences) => Promise<void>;
+    fetchRetrievals: (prefs: audioFeatures) => Promise<void>;
     fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
     reset: () => void;
 }
@@ -73,7 +58,7 @@ export const useDataStore = create<DataState>()(
             selectedTracks: [],
             retrievalTracks: [],
             recommendedTracks: [],
-            playlistExplanation: null,
+            description: null,
             clusterData: [],
             isLoading: false,
             error: null,
@@ -134,13 +119,12 @@ export const useDataStore = create<DataState>()(
                     });
                     if (!res.ok) {
                         const errorData = await res.json();
-                        console.error("🔥 백엔드 에러 응답:", errorData);
-                        // 에러가 나면 빈 배열로 설정하여 .slice 에러 방지
+                        console.error("백엔드 에러 응답:", errorData);
                         set({ retrievalTracks: [], isLoading: false, error: "서버 요청 실패" });
                         return; 
                     }
                     const data = await res.json();
-                    console.log("retrieval: ",data.tracks)
+                    console.log("retrieval result: ",data)
                     set({ 
                         retrievalTracks: data.tracks, 
                         isLoading: false 
@@ -163,9 +147,9 @@ export const useDataStore = create<DataState>()(
                         "inference_type": "string",
                         "track_ids": selectedTracks 
                     };
-
+                    
                     // 추천 요청 시 헤더 추가
-                    const res = await fetch('/api/recommend', {
+                    const res = await fetch('/api/recommendations', {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -173,7 +157,8 @@ export const useDataStore = create<DataState>()(
                         },
                         body: JSON.stringify(payload),
                     });
-                    const data = await res.json();
+                    const data: RecommendationResponse = await res.json();
+                    console.log("recommendation result:", data);
 
                     // 클러스터 요청 시 헤더 추가
                     const clusterRes = await fetch('/api/cluster', {
@@ -182,13 +167,14 @@ export const useDataStore = create<DataState>()(
                         }
                     });
                     const clusterData = await clusterRes.json();
-                    // console.log("Received data:", data);
+                    // console.log("Received data:", clusterData);
                     set({ 
                         recommendedTracks: data.tracks, 
-                        clusterData, 
-                        playlistExplanation: data.explanation,
+                        clusterData: clusterData, 
+                        description: data.description,
                         isLoading: false });
                 } catch (err) {
+                    console.error(err);
                     set({ error: "추천 결과 로딩 실패", isLoading: false });
                 }
             },
@@ -196,10 +182,9 @@ export const useDataStore = create<DataState>()(
                 preferences: null,
                 recommendedTracks: [],
                 clusterData: [],
-                playlistExplanation: null,
+                description: null,
                 selectedTracks: [],
                 isLoading: false,
-                accessToken: null,
             }),
         }),
         {

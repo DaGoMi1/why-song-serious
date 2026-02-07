@@ -53,7 +53,7 @@ export function Discover() {
         );
       }
       // store에 선택된 트랙들 저장
-      console.log(selectedTracks)
+      // console.log(selectedTracks)
       useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
