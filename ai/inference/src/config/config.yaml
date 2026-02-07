@@ -1,23 +1,28 @@
 # 서비스 경로 설정
 paths:
-  assets_path: "/app/service_assets"
-  annoy_index: "music_annoy.ann"
-  faiss_index: "vector_db.index"
-  deepfm_model: "deepfm_model.pt"
-  scaler: "scaler.pkl"
-  encoders: "encoders.pkl"
-  item_metadata: "item_meta.csv" # 곡 이름, 아티스트 정보용
+  assets_path: "service_assets"
+  # Retrieval 관련 (Faiss)
+  faiss_index: "faiss/prototype_v3_retriever.index"
+  scaler: "faiss/prototype_v3_scaler.pkl"
+  
+  # Ranking 관련 (DeepFM)
+  deepfm_model: "deepfm/deepfm_model.pt"
+  encoders: "deepfm/prototype_v3_label_encoders.pkl"
+  
+  # 데이터 로드용 (Mapping & Metadata)
+  item_meta_deepfm: "deepfm/prototype_v3_item_meta.pkl"
+  item_meta_faiss: "faiss/prototype_v3_item_meta.pkl"
+  item_inter: "pid_track_mapping.pkl"
+
+  model_path: "deepfm/prototype_v3_best_model.pt"
 
 data:
   unseen_pid: 8 # 처음 보는 유저 pid
 
 # 추천 로직 파라미터
 recommendation:
-  # 슬라이더 기반 (Annoy)
-  slider_top_k: 20
-  
   # 최종 추천 (Faiss + DeepFM)
-  retrieval_top_k: 2000       # Faiss에서 뽑을 후보군 수 (추출)
+  retrieval_top_k: 500       # Faiss에서 뽑을 후보군 수 (추출)
   rerank_top_k: 10           # DeepFM이 최종적으로 내보낼 수 (리랭킹)
 
 # 모델 상세 설정
@@ -25,4 +30,5 @@ model:
   embedding_dim: 64
   hidden_layers: [256, 128, 64]
   dropout: 0.4
-  continuous_features: ['acousticness', 'valence', 'energy', 'danceability', 'instrumentalness', 'loudness', 'speechiness', 'tempo', 'popularity']
+  cat_cols: ['pid', 'id', 'artists', 'acousticness_bin', 'valence_bin', 'energy_bin', 'danceability_bin', 'instrumentalness_bin', 'loudness_bin', 'speechiness_bin', 'tempo_bin', 'popularity_bin']
+  audio_cols: ['acousticness', 'valence', 'energy', 'danceability', 'instrumentalness', 'loudness', 'speechiness', 'tempo', 'popularity']
