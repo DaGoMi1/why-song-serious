@@ -1,10 +1,28 @@
+import { useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Music, Sparkles, BarChart3, ListMusic, Loader2, User } from 'lucide-react'; 
 import { useDataStore } from '../stores/useDataStore';
 
 export function Landing() {
   const navigate = useNavigate();
-  const { loginAsGuest, isLoading } = useDataStore();
+  const { loginAsGuest, checkLoginAndLoadHistory, isLoading: isGlobalLoading } = useDataStore();
+  const [loginType, setLoginType] = useState<'spotify' | 'guest' | null>(null);
+
+  useEffect(() => {
+    const initSession = async () => {
+      // 이미 토큰이 있는 경우 체크 시작
+      if (localStorage.getItem('access_token')) {
+         // 로딩 표시를 위해 loginType을 임시 설정할 수도 있음
+         const nextPath = await checkLoginAndLoadHistory();
+         
+         if (nextPath !== 'landing') {
+             navigate(`/${nextPath}`);
+         }
+      }
+    };
+    initSession();
+  }, [checkLoginAndLoadHistory, navigate]);
 
   const handleSpotifyLogin = async () => {
     try {
@@ -21,20 +39,6 @@ export function Landing() {
       alert('로그인에 실패했습니다.');
     }
   };
-
-  const generateUUID = () => {
-    // 브라우저가 crypto.randomUUID를 지원하면 사용
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    // 지원하지 않으면 Math.random() 기반의 폴리필 사용
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  };
-
 
   const handleGuestLogin = async () => {
     try {
@@ -77,10 +81,10 @@ export function Landing() {
               {/* Spotify Login Button */}
               <button
                 onClick={handleSpotifyLogin}
-                disabled={isLoading}
+                disabled={isGlobalLoading && loginType === 'spotify'}
                 className="!bg-green-500 hover:bg-green-600 disabled:bg-gray-500 disabled:cursor-not-allowed text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
               >
-                {isLoading ? (
+                {isGlobalLoading && loginType === 'spotify' ? (
                     <>
                         <Loader2 className="size-6 animate-spin" />
                         로그인 중...
@@ -95,10 +99,20 @@ export function Landing() {
 
               <button
                   onClick={handleGuestLogin}
-                  className="flex-1 !bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+                  disabled={isGlobalLoading && loginType === 'guest'}
+                  className="flex-1 !bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 disabled:cursor-not-allowed disabled:bg-white/5"
                 >
-                  <User className="size-6" />
-                  <span>게스트로 시작하기</span>
+                  {isGlobalLoading && loginType === 'guest' ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin" />
+                      <span>로그인 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <User className="size-6" />
+                      <span>게스트로 시작하기</span>
+                    </>
+                  )}
                 </button>
             </div>
 

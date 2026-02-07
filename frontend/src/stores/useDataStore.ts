@@ -35,7 +35,15 @@ interface GuestLoginResponse {
   nickname: string;
 }
 
+interface UserInfo {
+    id: number;
+    nickname: string;
+    auth_type: string;
+    created_at: string;
+}
+
 interface DataState {
+    currentUser: UserInfo | null;
     preferences: audioFeatures | null;
     // preferences 저장
     setPreferences: (prefs: audioFeatures) => void; 
@@ -53,6 +61,7 @@ interface DataState {
 
     accessToken: string | null;
     loginAsGuest: () => Promise<void>;
+    checkLoginAndLoadHistory: () => Promise<string>;
 
     fetchRetrievals: (prefs: audioFeatures) => Promise<void>;
     fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
@@ -122,6 +131,64 @@ export const useDataStore = create<DataState>()(
                     console.error(err);
                     set({ error: "로그인 실패", isLoading: false });
                     throw err;
+                }
+            },
+
+            currentUser: null,
+            checkLoginAndLoadHistory: async () => {
+                const token = get().accessToken;
+                if (!token) return 'landing'; // 토큰 없으면 랜딩페이지
+
+                set({ isLoading: true });
+                try {
+                    // 1. 내 정보 조회 (/api/auth/me)
+                    const userRes = await fetch('/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (!userRes.ok) throw new Error("Invalid Token");
+                    const userData: UserInfo = await userRes.json();
+                    set({ currentUser: userData });
+
+                    // 2. 최신 추천 내역 조회 (/api/recommendations/latest)
+                    const historyRes = await fetch('/api/recommendations/latest', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (historyRes.ok) {
+                        const historyData = await historyRes.json();
+                        
+                        // 데이터가 있고 트랙이 존재하면
+                        if (historyData.tracks && historyData.tracks.length > 0) {
+                            console.log("과거 추천 내역 발견:", historyData);
+
+                            // 아티스트 이름 정제 (cleanArtistName 헬퍼 함수 사용 가정)
+                            const cleanedTracks = historyData.tracks.map((track: Track) => ({
+                                ...track,
+                                artist: track.artist.replace(/[\[\]']/g, "") // 헬퍼 함수 없으면 직접 정제
+                            }));
+
+                            set({
+                                recommendedTracks: cleanedTracks,
+                                description: historyData.description,
+                                clusterData: localClusterData, // 클러스터 데이터도 필요하면 로드
+                                isLoading: false
+                            });
+                            
+                            return 'playlist'; // ✅ 바로 플레이리스트로 이동
+                        }
+                    }
+                    
+                    // 기록이 없으면 취향 선택 페이지로
+                    set({ isLoading: false });
+                    return 'preferences';
+
+                } catch (e) {
+                    console.error("Session check failed:", e);
+                    // 토큰 만료 시 로그아웃 처리
+                    localStorage.removeItem('access_token');
+                    set({ accessToken: null, currentUser: null, isLoading: false });
+                    return 'landing';
                 }
             },
 
