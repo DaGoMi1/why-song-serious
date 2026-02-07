@@ -556,13 +556,6 @@ export function Playlist() {
                 style={{ height: '100%', width: '100%' }}
                 onEvents={onChartEvent}
               />
-              {/* 배경 라벨 */}
-              <div className="absolute bottom-3 right-4 text-xs font-medium text-white/30 pointer-events-none">
-                Dim 1 →
-              </div>
-              <div className="absolute top-4 left-3 text-xs font-medium text-white/30 transform -rotate-90 origin-left pointer-events-none">
-                ← Dim 2
-              </div>
             </div>
           </div>
 
