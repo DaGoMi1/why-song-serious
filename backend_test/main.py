@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
@@ -28,7 +28,18 @@ class PreferenceFeatures(BaseModel):
     acousticness: float
     loudness: float
     tempo: float
-    
+
+class TrackResponse(BaseModel):
+    id: int
+    spotify_track_id: str
+    name: str
+    artist: str
+    album: str
+    duration_ms: int
+    popularity: int
+    image_url: str
+    audio_features: PreferenceFeatures
+
 class RetrievalRequest(BaseModel):
     preferences: PreferenceFeatures
     limit: int = 20
@@ -84,4 +95,46 @@ async def login_as_guest():
     return {
         "access_token": guest_token,
         "token_type": "bearer"
+    }
+
+
+@app.get("/api/tracks/{track_id}", response_model=TrackResponse)
+async def get_track_detail(
+    track_id: int = Path(..., description="내부 트랙 ID 또는 Spotify ID")
+    # db: Session = Depends(get_db) # DB 세션 주입
+):
+    """
+    ID로 트랙 상세 정보를 조회합니다.
+    """
+    
+    # --- [실제 DB 조회 로직 예시] ---
+    # track = db.query(Track).filter(Track.id == track_id).first()
+    
+    # if not track:
+    #     raise HTTPException(status_code=404, detail="Track not found")
+    
+    # return track
+    # -----------------------------
+
+    # 테스트 데이터 반환
+    if track_id == 0:
+        raise HTTPException(status_code=404, detail="Track not found")
+
+    return {
+        "id": track_id,
+        "spotify_track_id": "5ghIJDpPoe3CfHMGu71E6T",
+        "name": "Super Shy",
+        "artist": "NewJeans",
+        "album": "Get Up",
+        "duration_ms": 200000,
+        "popularity": 85,
+        "image_url": "https://placehold.co/400/4f46e5/ffffff?text=HypeBoy",
+        "audio_features": {
+            "acousticness": 0.1,
+            "valence": 0.8,
+            "energy": 0.7,
+            "danceability": 0.9,
+            "loudness": -5.0,
+            "tempo": 130.0
+        }
     }

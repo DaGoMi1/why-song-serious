@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import localClusterData from '../data/clustered_Data.json';
 
 interface audioFeatures {
     energy: number;
@@ -48,6 +49,7 @@ interface DataState {
 
     fetchRetrievals: (prefs: audioFeatures) => Promise<void>;
     fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
+    getTrackById: (trackId: string) => Promise<Track>;
     reset: () => void;
 }
 
@@ -160,19 +162,12 @@ export const useDataStore = create<DataState>()(
                     const data: RecommendationResponse = await res.json();
                     console.log("recommendation result:", data);
 
-                    // 클러스터 요청 시 헤더 추가
-                    const clusterRes = await fetch('/api/cluster', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    const clusterData = await clusterRes.json();
-                    // console.log("Received data:", clusterData);
                     set({ 
                         recommendedTracks: data.tracks, 
-                        clusterData: clusterData, 
+                        clusterData: localClusterData, 
                         description: data.description,
-                        isLoading: false });
+                        isLoading: false 
+                    });
                 } catch (err) {
                     console.error(err);
                     set({ error: "추천 결과 로딩 실패", isLoading: false });
@@ -186,6 +181,39 @@ export const useDataStore = create<DataState>()(
                 selectedTracks: [],
                 isLoading: false,
             }),
+
+            getTrackById: async (trackId: number | string) => {
+                const token = get().accessToken;
+                
+                // 1. 토큰 체크
+                if (!token) {
+                    console.error("토큰이 없습니다.");
+                    throw new Error("로그인이 필요합니다.");
+                }
+
+                try {
+                    const res = await fetch(`/api/tracks/${trackId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // 토큰 헤더 필수
+                        }
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`트랙 로드 실패: ${res.status}`);
+                    }
+
+                    const data: Track = await res.json();
+                    console.log(`${trackId}:`, data);
+                    
+                    return data;
+
+                } catch (err) {
+                    console.error(err);
+                    throw err;
+                }
+            },
         }),
         {
             // 로컬 스토리지

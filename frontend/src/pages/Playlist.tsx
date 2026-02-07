@@ -74,6 +74,7 @@ export function Playlist() {
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
   const [activeContext, setActiveContext] = useState<'selected' | 'recommended' | null>(null);
+  const [tempTrack, setTempTrack] = useState<Track | null>(null);
   const {
     recommendedTracks,
     clusterData,
@@ -83,6 +84,7 @@ export function Playlist() {
     description,
     isLoading,
     reset,
+    getTrackById
   } = useDataStore();
 
   useEffect(() => {
