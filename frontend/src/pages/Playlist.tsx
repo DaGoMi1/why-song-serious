@@ -526,11 +526,11 @@ export function Playlist() {
                 </button>
                 <button 
                   onClick={handleShare}
-                  className="bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300"
+                  className="!bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300"
                 >
                   <Share2 className="size-5" />
                 </button>
-                <button className="bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
+                <button className="!bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
                   <Download className="size-5" />
                 </button>
               </div>
