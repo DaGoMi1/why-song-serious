@@ -209,7 +209,7 @@ export function Preferences() {
         <button
           onClick={handleContinue}
 
-          className={`w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 : ''
+          className={`!bg-white w-full py-4 px-6 rounded-full font-bold text-lg transition-all duration-300 bg-white text-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 : ''
             }`}
         >
           {'음악 추천 받기'}
