@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Preferences } from '../pages/Preferences';
+import localClusterData from '../data/clustered_Data.json';
 
-interface Preferences {
+interface audioFeatures {
     energy: number;
     valence: number;
     danceability: number;
@@ -11,15 +11,27 @@ interface Preferences {
     tempo: number;
 }
 
-interface PlaylistExplanation {
+export interface Track {
+    id: number;
+    spotify_track_id: string;
     name: string;
+    artist: string;
+    album: string;
+    duration_ms: number;
+    popularity: number;
+    image_url: string;
+    audio_features: audioFeatures;
+}
+
+interface RecommendationResponse {
+    tracks: Track[];
     description: string;
 }
 
 interface DataState {
-    preferences: Preferences | null;
+    preferences: audioFeatures | null;
     // preferences 저장
-    setPreferences: (prefs: Preferences) => void; 
+    setPreferences: (prefs: audioFeatures) => void; 
 
     selectedTracks: number[];
     // discover에서 선택한 트랙들 저장
@@ -27,7 +39,7 @@ interface DataState {
 
     retrievalTracks: any[];
     recommendedTracks: any[];
-    playlistExplanation: PlaylistExplanation | null;
+    description: string | null;
     clusterData: any[];
     isLoading: boolean;
     error: string | null;
@@ -35,8 +47,9 @@ interface DataState {
     accessToken: string | null;
     loginAsGuest: () => Promise<void>;
 
-    fetchRetrievals: (prefs: Preferences) => Promise<void>;
+    fetchRetrievals: (prefs: audioFeatures) => Promise<void>;
     fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
+    getTrackById: (trackId: string) => Promise<Track>;
     reset: () => void;
 }
 
@@ -47,7 +60,7 @@ export const useDataStore = create<DataState>()(
             selectedTracks: [],
             retrievalTracks: [],
             recommendedTracks: [],
-            playlistExplanation: null,
+            description: null,
             clusterData: [],
             isLoading: false,
             error: null,
@@ -65,13 +78,19 @@ export const useDataStore = create<DataState>()(
                     const res = await fetch('/api/auth/guest', {
                         method: 'POST',
                     });
-                    
                     if (!res.ok) {
                         throw new Error('로그인 실패');
                     }
 
                     const data = await res.json();
-                    set({ accessToken: data.access_token, isLoading: false });
+                    set({ 
+                        accessToken: data.access_token, 
+                        preferences: null,
+                        selectedTracks: [],
+                        retrievalTracks: [],
+                        recommendedTracks: [],
+                        isLoading: false 
+                    });
                 } catch (err) {
                     set({ error: "로그인 실패", isLoading: false });
                     throw err;
@@ -102,15 +121,14 @@ export const useDataStore = create<DataState>()(
                     });
                     if (!res.ok) {
                         const errorData = await res.json();
-                        console.error("🔥 백엔드 에러 응답:", errorData);
-                        // 에러가 나면 빈 배열로 설정하여 .slice 에러 방지
+                        console.error("백엔드 에러 응답:", errorData);
                         set({ retrievalTracks: [], isLoading: false, error: "서버 요청 실패" });
                         return; 
                     }
                     const data = await res.json();
-                    console.log("retrieval: ",data)
+                    console.log("retrieval result: ",data)
                     set({ 
-                        retrievalTracks: data.tracks, // 응답 구조에 맞게 수정 (.tracks)
+                        retrievalTracks: data.tracks, 
                         isLoading: false 
                     });
                 } catch (err) {
@@ -127,8 +145,16 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
+<<<<<<< HEAD
                     const payload = {track_ids: selectedTracks };
 
+=======
+                    const payload = {
+                        "inference_type": "string",
+                        "track_ids": selectedTracks 
+                    };
+                    
+>>>>>>> fe/deploy
                     // 추천 요청 시 헤더 추가
                     const res = await fetch('/api/recommendations', {
                         method: 'POST',
@@ -138,22 +164,17 @@ export const useDataStore = create<DataState>()(
                         },
                         body: JSON.stringify(payload),
                     });
-                    const data = await res.json();
+                    const data: RecommendationResponse = await res.json();
+                    console.log("recommendation result:", data);
 
-                    // 클러스터 요청 시 헤더 추가
-                    const clusterRes = await fetch('/api/cluster', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    const clusterData = await clusterRes.json();
-                    // console.log("Received data:", data);
                     set({ 
                         recommendedTracks: data.tracks, 
-                        clusterData, 
-                        playlistExplanation: data.explanation,
-                        isLoading: false });
+                        clusterData: localClusterData, 
+                        description: data.description,
+                        isLoading: false 
+                    });
                 } catch (err) {
+                    console.error(err);
                     set({ error: "추천 결과 로딩 실패", isLoading: false });
                 }
             },
@@ -161,11 +182,43 @@ export const useDataStore = create<DataState>()(
                 preferences: null,
                 recommendedTracks: [],
                 clusterData: [],
-                playlistExplanation: null,
+                description: null,
                 selectedTracks: [],
                 isLoading: false,
-                accessToken: null,
             }),
+
+            getTrackById: async (trackId: number | string) => {
+                const token = get().accessToken;
+                
+                // 1. 토큰 체크
+                if (!token) {
+                    console.error("토큰이 없습니다.");
+                    throw new Error("로그인이 필요합니다.");
+                }
+
+                try {
+                    const res = await fetch(`/api/tracks/${trackId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // 토큰 헤더 필수
+                        }
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`트랙 로드 실패: ${res.status}`);
+                    }
+
+                    const data: Track = await res.json();
+                    console.log(`${trackId}:`, data);
+                    
+                    return data;
+
+                } catch (err) {
+                    console.error(err);
+                    throw err;
+                }
+            },
         }),
         {
             // 로컬 스토리지

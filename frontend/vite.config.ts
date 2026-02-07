@@ -8,6 +8,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000', // 백엔드 주소 (포트 확인 필요!)
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   }
 })

@@ -46,11 +46,14 @@ export function Discover() {
 
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
+      const isGuest = localStorage.getItem('isGuest') === 'true';
+      if (isGuest) {
+        window.confirm(
+          "게스트 로그인 시 결과가 저장되지 않습니다"
+        );
+      }
       // store에 선택된 트랙들 저장
-      console.log(selectedTracks)
-      const payload = {
-        ids: selectedTracks
-      };
+      // console.log(selectedTracks)
       useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
@@ -115,7 +118,7 @@ export function Discover() {
 
                 return (
                   <div
-                    key={track.spotify_track_id}
+                    key={track.id}
                     onClick={() => toggleTrackSelection(track.id)}
                     className={`grid grid-cols-12 gap-4 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200 hover:bg-white/10 group ${isSelected ? 'bg-teal-500/20' : ''
                       }`}
