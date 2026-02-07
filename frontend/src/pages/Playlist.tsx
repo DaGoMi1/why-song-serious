@@ -204,7 +204,11 @@ export function Playlist() {
       loudness: 0,
       tempo: 0
     });
-    
+    const count = playlistTracks.length;
+    const calcPercent = (totalValue: number) => {
+        return Math.round((totalValue / count) * 100);
+    };
+
     // loudness 정규화
     const normalizeLoudness = (avgLoudness: number) => {
       const avgDb = avgLoudness;
@@ -216,16 +220,15 @@ export function Playlist() {
     const normalizeTempo = (avgTempo: number) => {
       return Math.min(100, Math.round((avgTempo / 200) * 100));
     };
-    const count = playlistTracks.length;
+    
     const avg = (val: number) => Math.round(val / count);
     // console.log('Audio Feature Sums:', sum);
-
     // 차트용 포맷으로 변환
     return [
-      { feature: 'Energy', value: avg(sum.energy)*100 },
-      { feature: 'Dance', value: avg(sum.danceability)*100 },
-      { feature: 'Valence', value: avg(sum.valence)*100 },
-      { feature: 'Acoustic', value: avg(sum.acousticness)*100 },
+      { feature: 'energy', value: calcPercent(sum.energy) },       
+      { feature: 'dance', value: calcPercent(sum.danceability) },  
+      { feature: 'valence', value: calcPercent(sum.valence) },     
+      { feature: 'acoustic', value: calcPercent(sum.acousticness) },
       { feature: 'loudness', value: normalizeLoudness(avg(sum.loudness)) },
       { feature: 'tempo', value: normalizeTempo(avg(sum.tempo)) }
     ];
