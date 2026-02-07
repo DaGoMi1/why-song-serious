@@ -46,14 +46,12 @@ export function Discover() {
 
   const handleCreatePlaylist = () => {
     if (selectedTracks.length > 0) {
-      const isGuest = localStorage.getItem('isGuest') === 'true';
-      if (isGuest) {
-        window.confirm(
-          "게스트 로그인 시 결과가 저장되지 않습니다"
-        );
-      }
       // store에 선택된 트랙들 저장
       // console.log(selectedTracks)
+      if (selectedTracks.length < 3) {
+        alert("최소 3곡 이상 선택해야 플레이리스트를 생성할 수 있습니다.");
+        return; // 함수 강제 종료
+      }
       useDataStore.getState().setSelectedTracks(selectedTracks);
       navigate('/playlist');
     }
@@ -104,9 +102,9 @@ export function Discover() {
           <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-white/5 border-b border-white/10 text-sm text-white/60">
             <div className="col-span-1 text-center">#</div>
             <div className="col-span-5">제목</div>
-            <div className="col-span-3">앨범</div>
+            {/* <div className="col-span-3">앨범</div> */}
             <div className="col-span-1">BPM</div>
-            <div className="col-span-1 text-center">시간</div>
+            {/* <div className="col-span-1 text-center">시간</div> */}
           </div>
 
           {/* Track Rows */}
@@ -138,21 +136,21 @@ export function Discover() {
                             <Play className="hidden group-hover:block text-white size-10 md:size-8 fill-white" />
                           </>
                         )}
-                        <img
+                        {/* <img
                           src={track.image_url}
                           alt={track.name}
                           className="md:hidden size-12 rounded-lg object-cover"
-                        />
+                        /> */}
                       </div>
                     </div>
 
                     {/* Title & Artist */}
                     <div className="col-span-12 md:col-span-5 flex items-center gap-4">
-                      <img
+                      {/* <img
                         src={track.image_url}
                         alt={track.name}
                         className="hidden md:block size-12 rounded-lg object-cover"
-                      />
+                      /> */}
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white truncate">
                           {track.name}
@@ -164,11 +162,11 @@ export function Discover() {
                     </div>
 
                     {/* Album */}
-                    <div className="col-span-6 md:col-span-3 flex items-center">
+                    {/* <div className="col-span-6 md:col-span-3 flex items-center">
                       <span className="text-white/70 truncate text-sm md:text-base">
                         {track.album}
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* Tempo */}
                     <div className="hidden md:flex col-span-1 items-center">
@@ -176,9 +174,9 @@ export function Discover() {
                     </div>
 
                     {/* Duration */}
-                    <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
+                    {/* <div className="col-span-12 md:col-span-1 flex items-center justify-end md:justify-center">
                       <span className="text-white/40 text-sm">{track.duration_ms}</span>
-                    </div>
+                    </div> */}
                   </div>
                 );
               })
@@ -237,13 +235,24 @@ export function Discover() {
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div className="text-white">
               <p className="font-bold">{selectedTracks.length}개 선택됨</p>
-              <p className="text-sm text-white/60">플레이리스트를 만들어보세요</p>
+              <p className="text-sm text-white/60">
+                {selectedTracks.length < 3 
+                  ? `최소 3곡이 필요합니다 (${3 - selectedTracks.length}곡 더 선택)` 
+                  : "플레이리스트를 만들어보세요"}
+              </p>
             </div>
+            
             <button
               onClick={handleCreatePlaylist}
-              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-8 py-4 rounded-full font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              // 3곡 미만이면 버튼을 회색으로 바꾸고 싶다면 아래 주석 해제 및 클래스 수정
+              // disabled={selectedTracks.length < 3} 
+              className={`px-8 py-4 rounded-full font-bold shadow-xl transition-all duration-300 ${
+                selectedTracks.length < 3
+                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed' // 3곡 미만일 때 스타일
+                  : 'bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:shadow-2xl hover:scale-105' // 3곡 이상일 때 스타일
+              }`}
             >
-              플레이리스트 생성
+              {selectedTracks.length < 3 ? '곡을 더 선택해주세요' : '플레이리스트 생성'}
             </button>
           </div>
         </div>
