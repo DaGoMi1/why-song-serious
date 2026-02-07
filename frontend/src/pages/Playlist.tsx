@@ -89,7 +89,7 @@ export function Playlist() {
 
   useEffect(() => {
     // 추천 트랙이 없으면 받아옴
-    if (recommendedTracks.length === 0 || !description) {
+    if (selectedTracks.length > 0 && recommendedTracks.length === 0 || !description) {
       fetchRecommendations(selectedTracks);
     }
   }, [fetchRecommendations, recommendedTracks.length, description])
@@ -530,9 +530,9 @@ export function Playlist() {
                 >
                   <Share2 className="size-5" />
                 </button>
-                <button className="!bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
+                {/* <button className="!bg-white/10 backdrop-blur-sm text-white px-4 py-3 rounded-full hover:bg-white/20 transition-all duration-300">
                   <Download className="size-5" />
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -638,7 +638,7 @@ export function Playlist() {
                     <button className="hidden group-hover:block">
                       <Play className={`size-8 mx-auto ${isPlaying ? 'text-teal-400 fill-teal-400' : 'text-white'}`} />
                     </button>
-                    <img src={track.image_url} alt={track.name} className={`size-12 rounded-lg ${isPlaying ? 'opacity-100' : 'opacity-80'}`} />
+                    {/* <img src={track.image_url} alt={track.name} className={`size-12 rounded-lg ${isPlaying ? 'opacity-100' : 'opacity-80'}`} /> */}
                     <div className="flex-1 min-w-0">
                       <div className={`font-semibold truncate ${isPlaying ? 'text-teal-400' : 'text-white'}`}>{track.name}</div>
                       <div className="text-sm text-white/60 truncate">{track.artist}</div>
@@ -674,11 +674,11 @@ export function Playlist() {
                       }`}
                   />
                 </button>
-                <img
+                {/* <img
                   src={track.image_url}
                   alt={track.name}
                   className="size-12 rounded-lg"
-                />
+                /> */}
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-white truncate">
                     {track.name}

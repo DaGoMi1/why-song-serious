@@ -35,23 +35,12 @@ export function Landing() {
     });
   };
 
+
   const handleGuestLogin = async () => {
-    // 게스트용 ID 생성
-    const guestId = generateUUID(); 
-
-    // 랜덤 닉네임 생성
-    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const nickname = `Guest_${randomNum}`;
-
-    localStorage.setItem('login_type', 'guest');     
-    localStorage.setItem('user_id', guestId);        
-    localStorage.setItem('nickname', nickname);      
-    localStorage.setItem('isGuest', 'true');
-
-    // 백엔드에 요청 
     try {
+        localStorage.clear(); 
+        await loginAsGuest(); 
         
-        console.log(`Guest Login Info: ${nickname} (${guestId})`);
         navigate('/preferences');
     } catch (e) {
         console.error("Guest login failed", e);
@@ -106,7 +95,7 @@ export function Landing() {
 
               <button
                   onClick={handleGuestLogin}
-                  className="flex-1 !bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-teal-900 py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+                  className="flex-1 !bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <User className="size-6" />
                   <span>게스트로 시작하기</span>
