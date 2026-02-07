@@ -28,7 +28,7 @@ class SongRetriever:
 
     def retrieve(self, seed_ids):
         """플레이리스트 내 곡 ID들을 기반으로 후보군 추출"""
-            
+        
         # seed_ids에 해당하는 곡들의 피처 추출
         seed_songs = self.item_meta[self.item_meta['id'].isin(seed_ids)]
         if seed_songs.empty:
