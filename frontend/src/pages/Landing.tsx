@@ -58,7 +58,7 @@ export function Landing() {
                 <div className="bg-gradient-to-br from-blue-400 to-teal-400 rounded-2xl p-4">
                   <Music className="size-12 text-white" />
                 </div>
-                <h1 className="text-5xl font-bold text-white">MusicMatch</h1>
+                <h1 className="text-5xl font-bold text-white">Why Song Serious?</h1>
               </div>
 
               <h2 className="text-3xl font-bold text-white leading-tight">
