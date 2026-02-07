@@ -26,7 +26,7 @@ engine = RecommenderEngine(config)
 
 # API 라우터 연결
 from src.api.recommend import router as rec_router
-app.include_router(rec_router)
+app.include_router(rec_router, prefix="/ai")
 
 @app.get("/health")
 async def health_check():
