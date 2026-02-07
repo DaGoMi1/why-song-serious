@@ -8,6 +8,9 @@ paths:
   encoders: "encoders.pkl"
   item_metadata: "item_meta.csv" # 곡 이름, 아티스트 정보용
 
+data:
+  unseen_pid: 8 # 처음 보는 유저 pid
+
 # 추천 로직 파라미터
 recommendation:
   # 슬라이더 기반 (Annoy)
