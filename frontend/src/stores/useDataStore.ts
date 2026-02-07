@@ -53,6 +53,13 @@ interface DataState {
     reset: () => void;
 }
 
+const cleanArtistName = (name: string) => {
+    if (!name) return "Unknown Artist";
+    // ['Artist'] -> Artist
+    // ['Artist1', 'Artist2'] -> Artist1, Artist2
+    return name.replace(/[\[\]']/g, ""); 
+};
+
 export const useDataStore = create<DataState>()(
     persist(
         (set, get) => ({
@@ -126,9 +133,13 @@ export const useDataStore = create<DataState>()(
                         return; 
                     }
                     const data = await res.json();
+                    const cleanedTracks = data.tracks.map((track: Track) => ({
+                        ...track,
+                        artist: cleanArtistName(track.artist)
+                    }));
                     console.log("retrieval result: ",data)
                     set({ 
-                        retrievalTracks: data.tracks, 
+                        retrievalTracks: cleanedTracks, 
                         isLoading: false 
                     });
                 } catch (err) {
@@ -160,10 +171,14 @@ export const useDataStore = create<DataState>()(
                         body: JSON.stringify(payload),
                     });
                     const data: RecommendationResponse = await res.json();
-                    console.log("recommendation result:", data);
+                    const cleanedTracks = data.tracks.map((track: Track) => ({
+                        ...track,
+                        artist: cleanArtistName(track.artist)
+                    }));
+                    console.log("recommendation result:", cleanedTracks);
 
                     set({ 
-                        recommendedTracks: data.tracks, 
+                        recommendedTracks: cleanedTracks, 
                         clusterData: localClusterData, 
                         description: data.description,
                         isLoading: false 
@@ -205,6 +220,7 @@ export const useDataStore = create<DataState>()(
                     }
 
                     const data: Track = await res.json();
+                    data.artist = cleanArtistName(data.artist);
                     console.log(`${trackId}:`, data);
                     
                     return data;
