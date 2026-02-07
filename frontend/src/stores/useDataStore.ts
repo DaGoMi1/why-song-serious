@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import localClusterData from '../data/clustered_Data.json';
+import localClusterData from '../data/clustered_data.json';
 
 interface audioFeatures {
     energy: number;
@@ -146,7 +146,7 @@ export const useDataStore = create<DataState>()(
                     }
 
                     const payload = {
-                        "inference_type": "string",
+                        "inference_type": "embedding",
                         "track_ids": selectedTracks 
                     };
                     

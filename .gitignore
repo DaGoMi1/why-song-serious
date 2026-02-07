@@ -43,3 +43,5 @@ ENV/
 
 # 주피터 노트북 체크포인트 (데이터 분석 등)
 .ipynb_checkpoints/
+
+backend_test/
