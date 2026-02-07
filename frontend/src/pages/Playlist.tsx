@@ -154,7 +154,7 @@ export function Playlist() {
 
   // 현재 재생중인 트랙
   const currentTrackId = currentTrackIndex !== null && activeContext
-    ? currentList[currentTrackIndex]?.id || currentList[currentTrackIndex]?.spotify_track_id
+    ? currentList[currentTrackIndex]?.spotify_track_id || currentList[currentTrackIndex]?.spotify_track_id
     : null;
 
   const handleShare = async () => {
@@ -575,7 +575,6 @@ export function Playlist() {
           </h2>
           <div className="bg-gradient-to-br from-blue-500/20 to-teal-500/20 rounded-xl p-4">
             <div className="text-white text-xl font-bold">{description || "분석 중..."}</div>
-            <p className="text-white/60 text-sm mt-2">{description|| "데이터를 불러오는 중입니다."}</p>
           </div>
         </div>
 
