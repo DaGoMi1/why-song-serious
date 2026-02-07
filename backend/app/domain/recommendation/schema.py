@@ -9,6 +9,10 @@ class InferenceType(str, Enum):
     EMBEDDING = "embedding"
     MODEL_DEEPFM = "model-deepfm"
     MODEL_EASE = "model-ease"
+    MODEL_LIGHTGCN = "model-lightgcn"
+
+    def to_model_type(self) -> str:
+        return self.value.removeprefix("model-")
 
 
 class RecommendationRequest(BaseModel):

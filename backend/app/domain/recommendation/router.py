@@ -19,7 +19,7 @@ async def recommend_tracks(
 ):
     """선택한 트랙 기반 추천 생성 및 플레이리스트 저장"""
     recommended, description = await create_recommendation(
-        db, user_id, request.track_ids
+        db, user_id, request.track_ids, request.inference_type
     )
 
     return RecommendationResponse(
