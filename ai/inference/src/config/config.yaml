@@ -1,6 +1,6 @@
 # 서비스 경로 설정
 paths:
-  assets_path: "../service_assets"
+  assets_path: "/app/service_assets"
   annoy_index: "music_annoy.ann"
   faiss_index: "vector_db.index"
   deepfm_model: "deepfm_model.pt"
