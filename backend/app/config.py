@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     spotify_client_secret: str = ""
     spotify_redirect_uri: str = ""
 
+    # AI Service
+    ai_service_url: str = "http://ai:8001"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

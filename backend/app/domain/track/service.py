@@ -8,17 +8,12 @@ from app.domain.preference.model import UserPreference
 async def save_user_preference(
     db: AsyncSession,
     user_id: int,
-    normalized_preferences: list[float],
+    raw_preferences: list[float],
 ) -> UserPreference:
-    """
-    사용자 취향 저장
-    
-    Args:
-        normalized_preferences: 이미 0~1로 정규화된 값
-    """
+    """사용자 취향 저장 (raw 값)"""
     preference = UserPreference(
         user_id=user_id,
-        preference_values=normalized_preferences,
+        preference_values=raw_preferences,
     )
     
     db.add(preference)
@@ -89,4 +84,14 @@ async def get_track_by_id(db: AsyncSession, track_id: int) -> Track | None:
 async def get_tracks_by_ids(db: AsyncSession, track_ids: list[int]) -> list[Track]:
     """여러 ID로 트랙 조회"""
     result = await db.execute(select(Track).where(Track.id.in_(track_ids)))
+    return list(result.scalars().all())
+
+
+async def get_tracks_by_spotify_ids(
+    db: AsyncSession, spotify_track_ids: list[str]
+) -> list[Track]:
+    """여러 spotify_track_id로 트랙 조회"""
+    result = await db.execute(
+        select(Track).where(Track.spotify_track_id.in_(spotify_track_ids))
+    )
     return list(result.scalars().all())
