@@ -74,7 +74,7 @@ export function Playlist() {
   const [playlistTracks, setPlaylistTracks] = useState<Track[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
   const [activeContext, setActiveContext] = useState<'selected' | 'recommended' | null>(null);
-  const [tempTrack, setTempTrack] = useState<Track | null>(null);
+  const [cachedTracks, setCachedTracks] = useState<Record<string, Track>>({});
   const {
     recommendedTracks,
     clusterData,
@@ -235,6 +235,39 @@ export function Playlist() {
 
   }, [playlistTracks]);
 
+  const allKnownTracksMap = useMemo(() => {
+    const map = new Map<string, Track>();
+    
+    // 1. 추천 목록
+    recommendedTracks.forEach(t => map.set(t.spotify_track_id, t));
+    // 2. 검색/시드 목록
+    retrievalTracks.forEach(t => map.set(t.spotify_track_id, t));
+    // 3. 마우스 호버로 가져온 목록 (State)
+    Object.values(cachedTracks).forEach(t => map.set(t.spotify_track_id, t));
+
+    return map;
+  }, [recommendedTracks, retrievalTracks, cachedTracks]);
+  
+  const handleChartMouseOver = async (params: any) => {
+    // params.data = [emb1, emb2, id, cluster_number]
+    const trackId = params.data[2]; 
+
+    if (allKnownTracksMap.has(trackId)) return;
+    if (cachedTracks[trackId]) return; 
+
+    try {
+      const trackData = await getTrackById(trackId);
+      
+      // 툴팁 갱신
+      setCachedTracks(prev => ({
+        ...prev,
+        [trackId]: trackData
+      }));
+    } catch (e) {
+      console.error("Tooltip fetch failed", e);
+    }
+  };
+
   //zoom event
   const zoomLevelRef = useRef<number>(1)
   const onChartEvent = {
@@ -252,7 +285,8 @@ export function Playlist() {
 
       const currentZoom = 100 / (end - start);
       zoomLevelRef.current = currentZoom;
-    }
+    },
+    'mouseover': handleChartMouseOver
   }
 
   const { backgroundData, highlightData } = useMemo(() => {
@@ -297,6 +331,7 @@ export function Playlist() {
       const padding = range * 0.1;
       return value.max + padding;  // 최대값보다 10% 더 크게 설정
     };
+
     return {
       backgroundColor: 'transparent',
       grid: { left: 10, right: 10, top: 10, bottom: 10 },
@@ -341,18 +376,28 @@ export function Playlist() {
               </div>
             `;
           } else {
-            return `
-               <div style="text-align: left;">
-                <div style="font-size: 10px; color: ${colorHex}; margin-bottom: 4px;">● ${clusterInfo?.name || 'Group ' + clusterIndex}</div>
-                <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px; color: white;">
-                  ${trackId}
+            const trackInfo = allKnownTracksMap.get(trackId);
+
+            if (trackInfo) {
+              return `
+                <div style="text-align: left;">
+                  <div style="font-size: 10px; color: ${colorHex}; margin-bottom: 4px;">● Group ${clusterIndex}</div>
+                  <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: white;">
+                    ${trackInfo.name}
+                  </div>
+                  <div style="font-size: 12px; color: #ccc;">
+                    ${trackInfo.artist}
+                  </div>
                 </div>
-                <div style="font-size: 13px; color: #ccc;">
-                  ${trackId}
+              `;
+            } else {
+              return `
+                <div style="font-size: 12px; color: #aaa;">
+                  <div style="font-size: 10px; color: ${colorHex}; margin-bottom: 4px;">● Group ${clusterIndex}</div>
+                  <span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Loading info...
                 </div>
-                ${params.seriesName === 'Highlight' ? '<div style="margin-top:6px; font-size:11px; color:#fff; font-weight:bold; border-top:1px solid #444; padding-top:4px;">✨ Recommended for You</div>' : ''}
-              </div>
-            `;
+              `;
+            }
           }
         }
       },
@@ -388,7 +433,7 @@ export function Playlist() {
         {
           name: 'Background',
           type: 'scatter',
-          symbolSize: 3, 
+          symbolSize: 5, 
           data: backgroundData,
           itemStyle: {
             color: (params: any) => {
