@@ -14,7 +14,7 @@ engine = RecommenderEngine(config)
 
 # API 라우터 연결
 from src.api.recommend import router as rec_router
-app.include_router(rec_router, prefix="/api")
+app.include_router(rec_router, prefix="/ai")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

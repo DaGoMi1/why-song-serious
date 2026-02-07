@@ -9,7 +9,7 @@ class RecommendRequest(BaseModel):
     model_type: str
     seed_song_ids: List[str]
 
-@router.post("/recommendations/ai")
+@router.post("/recommendations")
 async def get_recommendation(request: RecommendRequest):
     mt = request.model_type.lower()
     
