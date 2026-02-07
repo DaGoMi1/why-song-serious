@@ -107,10 +107,10 @@ export function Playlist() {
   const selectedSeedTracks = useMemo(() => {
     if (!retrievalTracks || !selectedTracks) return [];
     return retrievalTracks.filter((track: any) => 
-      selectedTracks.includes(track.spotify_track_id)
+      selectedTracks.includes(track.id)
     );
   }, [retrievalTracks, selectedTracks]);
-
+  
   // 개별 곡 클릭
   const playTrack = (index: number, type: 'selected' | 'recommended') => {
     if (currentTrackIndex === index && activeContext === type) {
