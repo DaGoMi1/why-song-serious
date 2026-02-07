@@ -222,10 +222,10 @@ export function Playlist() {
 
     // 차트용 포맷으로 변환
     return [
-      { feature: 'Energy', value: avg(sum.energy) },
-      { feature: 'Dance', value: avg(sum.danceability) },
-      { feature: 'Valence', value: avg(sum.valence) },
-      { feature: 'Acoustic', value: avg(sum.acousticness) },
+      { feature: 'Energy', value: avg(sum.energy)*100 },
+      { feature: 'Dance', value: avg(sum.danceability)*100 },
+      { feature: 'Valence', value: avg(sum.valence)*100 },
+      { feature: 'Acoustic', value: avg(sum.acousticness)*100 },
       { feature: 'loudness', value: normalizeLoudness(avg(sum.loudness)) },
       { feature: 'tempo', value: normalizeTempo(avg(sum.tempo)) }
     ];
