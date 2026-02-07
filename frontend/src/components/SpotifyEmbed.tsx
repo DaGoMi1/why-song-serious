@@ -14,7 +14,7 @@ export const SpotifyEmbed = ({ trackId, onClose, onNext, onPrev, hasNext, hasPre
   if (!trackId) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div className="fixed bottom-25 right-6 z-50 flex flex-col items-end gap-2 animate-in slide-in-from-bottom-5 fade-in duration-300">
 
       {/* 커스텀 컨트롤러 (이전/다음) */}
       <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md p-2 rounded-50 border border-white/10 shadow-xl">
