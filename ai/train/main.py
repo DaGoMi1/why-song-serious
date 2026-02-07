@@ -9,6 +9,11 @@ from src.trainer import Trainer
 from src.evaluator import Evaluator
 from src.utils import set_seed
 
+from src.dataloaders.lightgcn_loader import LightGCNDataLoader
+from src.models.lightgcn import LightGCN
+from src.trainer import LightGCNTrainer
+from src.evaluator import LightGCNEvaluator
+
 def main():
     # Config 로드
     with open('./configs/base_config.yaml', 'r', encoding='utf-8') as f:
@@ -128,9 +133,76 @@ def main():
             top_k=inf_cfg['reranking']['top_k']
         )
 
-    elif use_model == 'cml':
-        # loader = 
-        pass
+    elif use_model == 'lightgcn':
+        d_cfg = config['data']
+        m_params = m_cfg['params']
+        m_train = m_cfg['train']
+        m_eval = m_cfg.get('evaluation', {})
+
+        print(f"[{use_model}] 데이터 로드 및 그래프 생성 시작...")
+
+        # 1. 데이터 로더
+        loader = LightGCNDataLoader(
+            file_path=d_cfg['path'],
+            test_size=d_cfg['test_size'],
+            hidden_count=d_cfg['hidden_count'],
+            random_state=global_cfg['random_state'],
+            device=device
+        )
+
+        train_data, test_input, test_label = loader.prepare()
+
+        # 2. 모델
+        model = LightGCN(
+            num_users=loader.num_users,
+            num_items=loader.num_items,
+            embedding_dim=m_params['embedding_dim'],
+            n_layers=m_params['n_layers']
+        ).to(device)
+
+        # 3. 옵티마이저
+        optimizer = getattr(optim, m_train.get('optimizer', 'Adam'))(
+            model.parameters(),
+            lr=float(m_train['learning_rate']),
+            weight_decay=float(m_train.get('weight_decay', 0.0))
+        )
+
+        # 4. Trainer (BPR loss)
+        trainer = LightGCNTrainer(
+            model=model,
+            optimizer=optimizer,
+            train_data=train_data,
+            num_negatives=m_train['num_negatives'],
+            device=device,
+            checkpoint_dir=global_cfg['checkpoint_dir'],
+            file_name=global_cfg['file_name']
+        )
+
+        print(f"{use_model} 학습 시작...")
+        trainer.train(epochs=m_train['epochs'])
+
+        # 5. Best model load
+        best_model_path = os.path.join(
+            global_cfg['checkpoint_dir'],
+            f"{global_cfg['file_name']}_best_model.pt"
+        )
+
+        if os.path.exists(best_model_path):
+            print(f"최적 모델 로드 중: {best_model_path}")
+            model.load_state_dict(torch.load(best_model_path, map_location=device))
+
+        # 6. 평가
+        evaluator = LightGCNEvaluator(
+            model=model,
+            loader=loader,
+            device=device
+        )
+
+        final_recall = evaluator.evaluate(
+            test_input=test_input,
+            test_label=test_label,
+            k=m_eval.get('k', config['inference']['reranking']['top_k'])
+        )
 
 
 if __name__ == "__main__":

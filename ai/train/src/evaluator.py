@@ -79,3 +79,57 @@ class Evaluator:
         print(f"Evaluation Results Recall@{top_k}: {avg_recall:.4f}")
         
         return avg_recall
+    
+class LightGCNEvaluator:
+    def __init__(self, model, loader, device):
+        self.model = model
+        self.loader = loader
+        self.device = device
+
+        self.num_users = loader.num_users
+        self.num_items = loader.num_items
+        self.adj = loader.adj
+        self.train_pos = loader.user_pos_train
+
+    @torch.no_grad()
+    def evaluate(self, test_input, test_label, k=10):
+        self.model.eval()
+
+        # Forward
+        emb = self.model(self.adj)
+
+        user_emb = emb[:self.num_users]          # (U, D)
+        item_emb = emb[self.num_users:]          # (I, D)
+
+        hits = 0
+        total = 0
+
+        print(f"[LightGCN] Recall@{k} 평가 시작...")
+
+        # test_label: columns = ['uid', 'iid']
+        for u, i in tqdm(
+            zip(test_label['uid'], test_label['iid']),
+            total=len(test_label)
+        ):
+            u = int(u)
+            gt_i = int(i)
+
+            # Score 계산
+            scores = torch.matmul(user_emb[u], item_emb.T)
+
+            # train에서 본 아이템 제거
+            seen_items = list(self.train_pos[u])
+            if len(seen_items) > 0:
+                scores[seen_items] = -1e9
+
+            # Top-K
+            topk_items = torch.topk(scores, k).indices
+
+            if gt_i in topk_items:
+                hits += 1
+            total += 1
+
+        recall = hits / total
+
+        print(f"[LightGCN] Evaluation Results Recall@{k}: {recall:.4f}")
+        return recall
