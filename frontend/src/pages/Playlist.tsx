@@ -84,7 +84,7 @@ export function Playlist() {
     description,
     isLoading,
     reset,
-    getTrackById
+    fetchTracksBySpotifyIds
   } = useDataStore();
 
   useEffect(() => {
@@ -93,15 +93,15 @@ export function Playlist() {
       fetchRecommendations(selectedTracks);
     }
   }, [fetchRecommendations, recommendedTracks.length, description])
-  console.log(recommendedTracks)
+  //console.log(recommendedTracks)
   useEffect(() => {
     if (recommendedTracks.length === 0) return;
     // 추천된 트랙 로드
     setPlaylistTracks(recommendedTracks);
   }, [navigate, recommendedTracks]);
 
-  console.log(selectedTracks)
-  console.log(retrievalTracks)
+  //console.log(selectedTracks)
+  //console.log(retrievalTracks)
 
   // retrievalTracks에서 ID가 selectedTracks에 포함된 곡들만 필터링
   const selectedSeedTracks = useMemo(() => {
@@ -250,19 +250,22 @@ export function Playlist() {
   
   const handleChartMouseOver = async (params: any) => {
     // params.data = [emb1, emb2, id, cluster_number]
-    const trackId = params.data[2]; 
+    const spotifyId = params.data?.[2]; 
 
-    if (allKnownTracksMap.has(trackId)) return;
-    if (cachedTracks[trackId]) return; 
+    if (!spotifyId) return;
 
+    // 이미 캐시된 데이터가 있는지 확인
+    if (cachedTracks[spotifyId]) return;
     try {
-      const trackData = await getTrackById(trackId);
+      const tracks = await fetchTracksBySpotifyIds([spotifyId]);
       
-      // 툴팁 갱신
-      setCachedTracks(prev => ({
-        ...prev,
-        [trackId]: trackData
-      }));
+      if (tracks && tracks.length > 0) {
+        // 받아온 데이터를 캐시에 저장 (Key: spotifyId)
+        setCachedTracks(prev => ({
+          ...prev,
+          [spotifyId]: tracks[0] 
+        }));
+      }
     } catch (e) {
       console.error("Tooltip fetch failed", e);
     }
@@ -376,7 +379,8 @@ export function Playlist() {
               </div>
             `;
           } else {
-            const trackInfo = allKnownTracksMap.get(trackId);
+            const spotifyId = itemData[2];
+            const trackInfo = allKnownTracksMap.get(spotifyId) || cachedTracks[spotifyId];
 
             if (trackInfo) {
               return `
