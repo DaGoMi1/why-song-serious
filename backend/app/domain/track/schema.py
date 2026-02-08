@@ -114,3 +114,15 @@ class TrackSearchResponse(BaseModel):
     """취향 기반 트랙 검색 응답"""
     preference_id: int
     tracks: list[TrackResponse]
+
+
+class TrackIdsRequest(BaseModel):
+    track_ids: list[int] = Field(..., min_length=1, max_length=50)
+
+
+class SpotifyIdsRequest(BaseModel):
+    spotify_track_ids: list[str] = Field(..., min_length=1, max_length=50)
+
+
+class TrackListResponse(BaseModel):
+    tracks: list[TrackResponse]
