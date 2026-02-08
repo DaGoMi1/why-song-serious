@@ -4,11 +4,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.common.dependencies import get_current_user_id
 from app.common.exceptions import NotFoundException
-from app.domain.track.schema import TrackSearchRequest, TrackSearchResponse, TrackResponse
+from app.domain.track.schema import (
+    TrackSearchRequest,
+    TrackSearchResponse,
+    TrackResponse,
+    TrackIdsRequest,
+    SpotifyIdsRequest,
+    TrackListResponse,
+)
 from app.domain.track.service import (
     save_user_preference,
     search_tracks_by_preference,
     get_track_by_id,
+    get_tracks_by_ids,
+    get_tracks_by_spotify_ids,
 )
 from app.domain.interaction.service import save_search_interactions
 
@@ -43,6 +52,32 @@ async def search_tracks(
     
     return TrackSearchResponse(
         preference_id=preference.id,
+        tracks=[TrackResponse.model_validate(track) for track in tracks],
+    )
+
+
+@router.post("/ids", response_model=TrackListResponse)
+async def get_tracks_by_id_list(
+    request: TrackIdsRequest,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """트랙 ID 목록으로 조회"""
+    tracks = await get_tracks_by_ids(db, request.track_ids)
+    return TrackListResponse(
+        tracks=[TrackResponse.model_validate(track) for track in tracks],
+    )
+
+
+@router.post("/spotify-ids", response_model=TrackListResponse)
+async def get_tracks_by_spotify_id_list(
+    request: SpotifyIdsRequest,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Spotify 트랙 ID 목록으로 조회"""
+    tracks = await get_tracks_by_spotify_ids(db, request.spotify_track_ids)
+    return TrackListResponse(
         tracks=[TrackResponse.model_validate(track) for track in tracks],
     )
 
