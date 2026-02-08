@@ -22,7 +22,7 @@ data:
 # 추천 로직 파라미터
 recommendation:
   # 최종 추천 (Faiss + DeepFM)
-  retrieval_top_k: 500       # Faiss에서 뽑을 후보군 수 (추출)
+  retrieval_top_k: 100       # Faiss에서 뽑을 후보군 수 (추출)
   rerank_top_k: 10           # DeepFM이 최종적으로 내보낼 수 (리랭킹)
 
 # 모델 상세 설정
