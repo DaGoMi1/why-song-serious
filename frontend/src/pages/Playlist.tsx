@@ -437,7 +437,7 @@ export function Playlist() {
         {
           name: 'Background',
           type: 'scatter',
-          symbolSize: 5, 
+          symbolSize: 7, 
           data: backgroundData,
           itemStyle: {
             color: (params: any) => {
