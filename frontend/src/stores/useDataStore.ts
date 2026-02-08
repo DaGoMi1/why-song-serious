@@ -65,7 +65,7 @@ interface DataState {
 
     fetchRetrievals: (prefs: audioFeatures) => Promise<void>;
     fetchRecommendations: (selectedTracks: number[]) => Promise<void>;
-    getTrackById: (trackId: string) => Promise<Track>;
+    fetchTracksBySpotifyIds: (spotifyIds: string[]) => Promise<Track[]>;
     reset: () => void;
 }
 
@@ -201,7 +201,7 @@ export const useDataStore = create<DataState>()(
                         throw new Error("로그인이 필요합니다.");
                     }
 
-                    console.log("fetch retrieval")
+                    //console.log("fetch retrieval")
                     const payload={
                         preferences: prefs,
                         limit: 20
@@ -225,7 +225,7 @@ export const useDataStore = create<DataState>()(
                         ...track,
                         artist: cleanArtistName(track.artist)
                     }));
-                    console.log("retrieval result: ",data)
+                    //console.log("retrieval result: ",data)
                     set({ 
                         retrievalTracks: cleanedTracks, 
                         isLoading: false 
@@ -273,7 +273,7 @@ export const useDataStore = create<DataState>()(
                         ...track,
                         artist: cleanArtistName(track.artist)
                     }));
-                    console.log("recommendation result:", cleanedTracks);
+                    //console.log("recommendation result:", cleanedTracks);
 
                     set({ 
                         recommendedTracks: cleanedTracks, 
@@ -295,37 +295,42 @@ export const useDataStore = create<DataState>()(
                 isLoading: false,
             }),
 
-            getTrackById: async (trackId: number | string) => {
+            fetchTracksBySpotifyIds: async (spotifyIds: string[]) => {
                 const token = get().accessToken;
-                
-                // 1. 토큰 체크
-                if (!token) {
-                    console.error("토큰이 없습니다.");
-                    throw new Error("로그인이 필요합니다.");
-                }
+                if (!token) throw new Error("로그인이 필요합니다.");
 
                 try {
-                    const res = await fetch(`/api/tracks/${trackId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` // 토큰 헤더 필수
-                        }
-                    });
+                // POST /api/tracks/spotify-ids
+                const res = await fetch('/api/tracks/spotify-ids', {
+                    method: 'POST', // GET -> POST 변경
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                    },
+                    // Body 구조: { "spotify_track_ids": ["string"] }
+                    body: JSON.stringify({
+                    spotify_track_ids: spotifyIds
+                    })
+                });
 
-                    if (!res.ok) {
-                        throw new Error(`트랙 로드 실패: ${res.status}`);
-                    }
+                if (!res.ok) {
+                    throw new Error(`트랙 로드 실패: ${res.status}`);
+                }
 
-                    const data: Track = await res.json();
-                    data.artist = cleanArtistName(data.artist);
-                    console.log(`${trackId}:`, data);
-                    
-                    return data;
+                // Response 구조: { "tracks": [ ... ] }
+                const data = await res.json();
+                
+                // 아티스트 이름 정제 후 반환
+                const cleanTracks = data.tracks.map((track: Track) => ({
+                    ...track,
+                    artist: cleanArtistName(track.artist)
+                }));
+
+                return cleanTracks; // Track[] 반환
 
                 } catch (err) {
-                    console.error(err);
-                    throw err;
+                console.error("API Error:", err);
+                throw err;
                 }
             },
         }),
