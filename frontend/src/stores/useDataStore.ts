@@ -249,7 +249,7 @@ export const useDataStore = create<DataState>()(
                     }
 
                     const payload = {
-                        "inference_type": "embedding",
+                        "inference_type": "model-deepfm",
                         "track_ids": selectedTracks 
                     };
                     
