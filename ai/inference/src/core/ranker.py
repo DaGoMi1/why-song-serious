@@ -44,4 +44,4 @@ class SongRanker:
         top_k_df = input_df.sort_values(by='model_score', ascending=False).head(self.k).copy()
         top_k_df['org_id'] = top_k_df['id'].map(self.inv_id_map)
         
-        return top_k_df[['org_id', 'name', 'model_score']]
+        return top_k_df.rename(columns={'org_id': 'id'})[['id', 'name', 'model_score']]
