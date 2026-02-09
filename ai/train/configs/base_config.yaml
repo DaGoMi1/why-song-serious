@@ -10,6 +10,17 @@ data:
   path: "./data/add_feature_v3.csv"
   test_size: 0.1    # 테스트셋 비율
   hidden_count: 3   # pid별 검증용으로 제외시킬 곡 수
+  binning_configs:
+    energy: 20
+    valence: 20
+    danceability: 15
+    tempo: 15
+    acousticness: 20
+    speechiness: 15
+    instrumentalness: 5
+    loudness: 10
+    popularity: 20
+    default: 5
 
 # 모델 정의
 use: 'deepfm'
@@ -28,6 +39,8 @@ models:
       learning_rate: 0.0003
       weight_decay: 0.00001
       loss_pos_weight: 5.0
+      loss_alpha: 0.8
+      loss_gamma: 0.2
       optimizer: "Adam"
       epochs: 20
       num_negatives: 4      # pos:neg 비율 -> 1:N
