@@ -4,10 +4,10 @@ import os
 import torch.optim as optim
 import numpy as np
 import joblib
-from src.dataloaders import DeepFMDataLoader
+from src.dataloaders.deepfm_loader import DeepFMDataLoader
 from src.retriever import Retriever
 from src.models.deepfm import DeepFM
-from src.trainer import Trainer
+from src.trainer import DeepFMTrainer
 from src.evaluator import Evaluator
 from src.utils import set_seed
 
@@ -48,7 +48,8 @@ def main():
             file_path=config['data']['path'],
             cat_cols=m_feat['categorical'],
             cont_cols=m_feat['continuous'],
-            random_state=global_cfg['random_state']
+            random_state=global_cfg['random_state'],
+            bin_config=d_cfg['binning_configs']
         )
 
         # 데이터 전처리
@@ -72,7 +73,6 @@ def main():
         model = DeepFM(
             feature_dims=feature_dims,
             embedding_dim=m_params['embedding_dim'],
-            continuous_cols=continuous_cols,
             hidden_layers=m_params['hidden_layers'],
             dropout=m_params['dropout']
         ).to(device)
@@ -85,10 +85,12 @@ def main():
         )
 
         # 트레이너
-        trainer = Trainer(
+        trainer = DeepFMTrainer(
             model=model, 
             optimizer=optimizer,
             loss_pos_weight=m_train['loss_pos_weight'],
+            loss_alpha=m_train['loss_alpha'],
+            loss_gamma=m_train['loss_gamma'],
             device=device,
             checkpoint_dir=global_cfg['checkpoint_dir'],
             file_name=global_cfg['file_name']
@@ -117,7 +119,7 @@ def main():
         retriever = Retriever(
             audio_cols=m_feat['continuous'], # 모델별 피처 반영
             retriever_k=inf_cfg['retrieval']['top_k'],
-            label_encoders=loader.label_encoders
+            loader=loader
         )
 
         retriever.prepare_data(
