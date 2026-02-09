@@ -2,13 +2,16 @@ import os
 import torch
 from tqdm import tqdm
 from src.losses import manual_bce_with_logits_loss
+from src.losses import focal_binary_cross_entropy_with_logits
 
-class Trainer:
-    def __init__(self, model, optimizer, loss_pos_weight, device, checkpoint_dir="./checkpoints", file_name="기본"):
+class DeepFMTrainer:
+    def __init__(self, model, optimizer, loss_pos_weight, loss_alpha, loss_gamma, device, checkpoint_dir="./checkpoints", file_name="기본"):
         self.model = model
         self.optimizer = optimizer
-        self.criterion = manual_bce_with_logits_loss
+        self.criterion = focal_binary_cross_entropy_with_logits
         self.loss_pos_weight = loss_pos_weight
+        self.loss_alpha=loss_alpha
+        self.loss_gamma=loss_gamma
         self.device = device
         self.checkpoint_dir = checkpoint_dir
         self.file_name = file_name
@@ -24,7 +27,7 @@ class Trainer:
 
             self.optimizer.zero_grad()
             output = self.model(cat_x, cont_x)
-            loss = self.criterion(output.squeeze(), label, pos_weight=self.loss_pos_weight)
+            loss = self.criterion(output.squeeze(), label, alpha=0.8, gamma=2.0)
             loss.backward()
             self.optimizer.step()
 
@@ -43,7 +46,7 @@ class Trainer:
                 cat_x, cont_x, label = cat_x.to(self.device), cont_x.to(self.device), label.to(self.device)
 
                 output = self.model(cat_x, cont_x)
-                loss = self.criterion(output.squeeze(), label, pos_weight=self.loss_pos_weight)
+                loss = self.criterion(output.squeeze(), label, alpha=0.8, gamma=2.0)
                 total_loss += loss.item()
 
         return total_loss / len(valid_loader)
