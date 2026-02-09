@@ -2,9 +2,11 @@ import yaml
 import torch
 import os
 import torch.optim as optim
-from ai.src.dataloaders import DeepFMDataLoader
+import numpy as np
+import joblib
+from src.dataloaders import DeepFMDataLoader
 from src.retriever import Retriever
-from ai.src.models.deepfm import DeepFM
+from src.models.deepfm import DeepFM
 from src.trainer import Trainer
 from src.evaluator import Evaluator
 from src.utils import set_seed
@@ -13,6 +15,10 @@ from src.dataloaders.lightgcn_loader import LightGCNDataLoader
 from src.models.lightgcn import LightGCN
 from src.trainer import LightGCNTrainer
 from src.evaluator import LightGCNEvaluator
+
+from src.dataloaders.ease_loader import EASEDataLoader
+from src.models.ease import EASE
+from src.evaluator import EASEEvaluator
 
 def main():
     # Config 로드
@@ -203,6 +209,72 @@ def main():
             test_label=test_label,
             k=m_eval.get('k', config['inference']['reranking']['top_k'])
         )
+    
+    elif use_model == 'ease':
+        import time
+        d_cfg = config['data']
+        l_list = m_cfg['lambda_list']
+        
+        # 데이터 로더 클래스 생성
+        loader = EASEDataLoader(
+            file_path=config['data']['path'],
+            device=device,
+            random_state=global_cfg['random_state']
+        )
+
+        # 데이터 전처리
+        matrix = loader.preprocess()
+
+        # 데이터 분할
+        train, test_input, test_label = loader.split_data(
+            matrix,
+            test_size=d_cfg['test_size'],
+            hidden_count=d_cfg['hidden_count']
+        )
+
+        # 하이퍼파라미터 튜닝
+        best_lambda = 0.0
+        best_recall = 0.0
+
+        for i, l in enumerate(l_list):
+            start_time = time.time()
+            # 학습
+            print(f"{use_model} 학습 시작... lambda={l}")
+            model = EASE(l)
+
+            model.fit(train)
+
+            end_time = time.time()
+
+            # 평가기 실행
+            evaluator = EASEEvaluator(
+                model=model,
+            )
+            
+            # Recall@10 계산 (test_input 전체를 대상으로 루프 실행)
+            final_recall = evaluator.evaluate(
+                input=test_input,
+                label=test_label,
+                k=config['inference']['reranking']['top_k']
+            )
+            print(f"{i}번째 학습: {end_time - start_time}초 소요됐습니다.")
+            
+            if best_recall < final_recall:
+                best_lambda = l
+                best_recall = final_recall
+                
+        print(f"모델 재학습(lambda={best_recall})")
+        model = EASE(best_lambda)
+        matrix = torch.FloatTensor(matrix).to(device)
+        model.fit(matrix)
+
+        best_model_path = global_cfg['checkpoint_dir']+"ease_best_B.npy"
+        
+        # 모델 및 라벨인코더 저장
+        np.save("checkpoints/best_B.npy",
+                model.B.detach().cpu().numpy())
+        joblib.dump(loader.label_encoders['id'],
+                    "checkpoints/label_encoder_ease.joblib")
 
 
 if __name__ == "__main__":

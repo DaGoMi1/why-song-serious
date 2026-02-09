@@ -133,3 +133,21 @@ class LightGCNEvaluator:
 
         print(f"[LightGCN] Evaluation Results Recall@{k}: {recall:.4f}")
         return recall
+    
+class EASEEvaluator:
+    def __init__(self, model):
+        self.model = model
+
+    def evaluate(self, input, label, k):
+        scores = self.model.forward(input)
+        scores[input.bool()] = -torch.inf
+
+        _, pred = torch.topk(scores, k, dim=1)
+
+        hits = torch.gather(label, dim=1, index=pred).sum(dim=1)
+
+        recall = (hits / (label.sum(dim=1) + 1e-9)).mean().detach().cpu().numpy()
+
+        print(f"Evaluation Results Recall@{k}: {recall:.4f}")
+
+        return recall
