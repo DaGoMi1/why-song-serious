@@ -1,20 +1,21 @@
 import pandas as pd
 import numpy as np
 import torch
+import joblib
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader as PyTorchDataLoader, TensorDataset
-import ast
 
 class DeepFMDataLoader:
-    def __init__(self, file_path, cat_cols, cont_cols, random_state=42):
+    def __init__(self, file_path, cat_cols, cont_cols, random_state=42, bin_config=None):
         self.df = pd.read_csv(file_path)
         self.cat_cols = cat_cols
         self.cont_cols = cont_cols
+        self.bin_config = bin_config
         self.label_encoders = {}
-        self.scaler = StandardScaler()
         self.random_state = random_state
+        self.bin_edges = {}
 
     def split_data(self, test_size=0.1, hidden_count=3):
         """
@@ -68,34 +69,44 @@ class DeepFMDataLoader:
         수치형 데이터 정규화
         feature_dims 계산
         """
-        if 'popularity' in self.df.columns:
-            # 5개 구간으로 나누어 'pop_grade'라는 새로운 범주형 피쳐 생성
-            self.df['pop_grade'] = pd.cut(self.df['popularity'], 
-                                          bins=[0, 40, 60, 73, 80, 101], 
-                                          labels=[0, 1, 2, 3, 4], 
-                                          right=False).astype(int)
+        for col in self.cont_cols:
+            bin_col_name = f"{col}_bin"
+
+            q_value = self.bin_config.get(col, self.bin_config['default'])
             
-            # 범주형 피쳐 리스트에 추가
-            if 'pop_grade' not in self.cat_cols:
-                self.cat_cols.append('pop_grade')
-        
+            series, bins = pd.qcut(
+                self.df[col], 
+                q=q_value, 
+                labels=False, 
+                duplicates='drop', 
+                retbins=True
+            )
+            
+            bins[0] = -float('inf')
+            bins[-1] = float('inf')
+            
+            self.df[bin_col_name] = series
+            self.bin_edges[col] = bins
+            
+            if bin_col_name not in self.cat_cols:
+                self.cat_cols.append(bin_col_name)
+
         # 범주형 데이터 라벨 인코딩
         for col in self.cat_cols:
             le = LabelEncoder()
-            self.df[col] = le.fit_transform(self.df[col])
+            self.df[col] = le.fit_transform(self.df[col].astype(str)) 
             self.label_encoders[col] = le
-        
-        # 수치형 데이터 정규화
-        if self.cont_cols:
-            self.df[self.cont_cols] = self.scaler.fit_transform(self.df[self.cont_cols])
 
-        # feature_dims 계산
+        # feature_dims는 DeepFM 임베딩 레이어 설정을 위해 '_bin' 컬럼들로 계산됨
         feature_dims = {col: self.df[col].nunique() for col in self.cat_cols}
 
-        print(f"전체 데이터 pid 수: {feature_dims.get(self.cat_cols[0])}")
-        print(f"전체 데이터 id 수: {feature_dims.get(self.cat_cols[1])}")
+        print(f"범주형 피처 개수: {len(self.cat_cols)}")
+        print(f"feature_dims: {feature_dims}")
 
-        return feature_dims, self.cont_cols
+        joblib.dump(self.label_encoders, '프로토타입_v3_label_encoders.pkl')
+        joblib.dump(self.bin_edges, '프로토타입_v3_bin_edges.pkl')
+
+        return feature_dims
     
     def get_data_with_negatives(self, train_data, num_negatives=4):
         """
@@ -106,8 +117,9 @@ class DeepFMDataLoader:
         """
         # 아이템 피쳐 준비 (id 기준 중복 제거, artists 포함 모든 정보)
         # cat_cols[0]인 'pid'를 제외한 모든 아이템 속성 추출
-        item_meta_cols = [c for c in self.cat_cols if c != self.cat_cols[0]] + self.cont_cols
+        item_meta_cols = [c for c in self.cat_cols if c != self.cat_cols[0]]
         item_features = self.df[item_meta_cols].drop_duplicates(self.cat_cols[1])
+
         # 모든 id unique 값
         all_item_ids = self.df[self.cat_cols[1]].unique()
         
@@ -160,7 +172,6 @@ class DeepFMDataLoader:
         """
         # 범주형 및 수치형 데이터 변환
         cat_x = torch.LongTensor(df[self.cat_cols].values.copy())
-        cont_x = torch.FloatTensor(df[self.cont_cols].values.copy())
         
         # 라벨 변환 (추론시 컬럼에 라벨이 없으므로 zeors)
         if 'label' in df.columns:
@@ -169,5 +180,5 @@ class DeepFMDataLoader:
             label = torch.zeros(len(df), dtype=torch.float32)
 
         # Dataset 및 DataLoader 생성
-        dataset = TensorDataset(cat_x, cont_x, label)
+        dataset = TensorDataset(cat_x, label)
         return PyTorchDataLoader(dataset, batch_size=batch_size, shuffle=shuffle)

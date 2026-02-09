@@ -1,8 +1,6 @@
 import torch
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
-import ast
 
 class Evaluator:
     def __init__(self, retriever, model, loader, device):
@@ -17,46 +15,34 @@ class Evaluator:
         retrieval_recalls = []
         
         print(f"후보군 추출 및 리랭킹 시작 (Recall@{top_k})...")
-        
+
         pbar = tqdm(test_input.groupby('pid'))
 
         for pid, group in pbar:
             seed_songs = group['id'].tolist()
 
-            # 정답 곡 리스트
+            # 정답 곡 리스트 (Hit 여부 판단용)
             actual_target = test_label[test_label['pid'] == pid]['id'].tolist()
             
-            # 리트리벌 후보 추출
-            candidates = self.retriever.retrieve(song_ids=seed_songs).copy()
-            
+            # 리트리벌: 500개 후보 추출
+            candidates = self.retriever.retrieve(song_ids=seed_songs, pid_raw=pid).copy()
+
             # 리트리벌 단계의 Recall (실제 정답 중 몇 개나 후보군에 포함되었나)
             retrieval_ids = candidates['id'].tolist()
             retrieval_hits = len(set(retrieval_ids) & set(actual_target))
             retrieval_recall = retrieval_hits / len(actual_target)
             retrieval_recalls.append(retrieval_recall)
             
-            # 인기도 범주화
-            # 리트리벌이 가져온 candidates에 'popularity'가 있으므로 똑같은 기준으로 binning
-            if 'popularity' in candidates.columns:
-                candidates['pop_grade'] = pd.cut(candidates['popularity'], 
-                                                 bins=[0, 40, 60, 73, 80, 101], 
-                                                 labels=[0, 1, 2, 3, 4], 
-                                                 right=False).astype(int)
-
-            # 리랭킹을 위한 데이터 변환 (pid 정보 주입)
-            candidates['pid'] = pid
-            
-            # DeepFM 입력용 텐서 생성
             candidate_loader = self.loader.transform_to_loader(
                 candidates, batch_size=len(candidates), shuffle=False
             )
-            
+
             # 리랭킹 스코어 예측
             scores = []
             with torch.no_grad():
                 for batch in candidate_loader:
-                    x_cat, x_cont, _ = [b.to(self.device) for b in batch]
-                    pred = self.model(x_cat, x_cont)
+                    cat_x, _ = [b.to(self.device) for b in batch]
+                    pred = self.model(cat_x)
                     scores.extend(pred.cpu().numpy())
             
             candidates['score'] = scores
@@ -70,7 +56,7 @@ class Evaluator:
             recall = hits / len(actual_target)
             
             all_user_recalls.append(recall)
-
+            
         # Recall@K 출력
         avg_retrieval_recall = np.mean(retrieval_recalls)
         avg_recall = np.mean(all_user_recalls)
