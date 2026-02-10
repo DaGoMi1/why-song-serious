@@ -43,7 +43,7 @@
 # 주요 구현 기능
 
 1. 오디오 피처 슬라이더를 유저가 오디오 피쳐 선택
-2. 후보군 음악 PGVector 검색 및 유저 노출
+2. 후보군 음악 pgvector 검색 및 유저 노출
 3. 곡 선택
 4. 선택된 곡들을 입력으로 넣어 Faiss 검색과 DeepFM two-stage 방식으로 플레이리스트 생성
 5. 생성된 플레이리스트 기반으로 레이더차트와 클러스터맵 생성
@@ -52,15 +52,15 @@
 
 ### 서비스 아키텍처
 
-![image.png](attachment:6a49d2f5-fe10-4886-a0bc-ca9ef793461b:image.png)
+<img width="1734" height="1334" alt="image" src="https://github.com/user-attachments/assets/d54c798e-aba6-4029-9ef1-31d8f5011e1f" />
 
 ### 모델 아키텍처
 
-![image.png](attachment:a74e7308-dbbd-44ec-a373-3326919e64f3:image.png)
+<img width="2492" height="1004" alt="image" src="https://github.com/user-attachments/assets/ad6220fc-4b15-45d5-bbd1-1dcead0e5e68" />
 
 ### 설명 가능성 알고리즘
 
-![image.png](attachment:39dbe90a-6f63-4afc-8846-3b844eb5bfe1:image.png)
+<img width="1824" height="698" alt="image" src="https://github.com/user-attachments/assets/fe3aec93-2b50-4686-a5b3-b780a29292cd" />
 
 # 파일 구조
 
@@ -204,7 +204,7 @@ Faiss 검색 시 입력 곡들의 평균 벡터를 활용하여 계산을 하였
 ### Requirements
 
 - Docker & Docker Compose
-- PostgresQL
+- PostgreSQL
 
 ### Repository Clone
 
@@ -223,7 +223,7 @@ $ cp ./backend/.env.example .env
 ### Run Application
 
 ```bash
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 ## 라이선스 및 출처 표기
