@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- |
 | <a href = 'https://github.com/gsmin02'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/86878502?v=4'></a> | <a href = 'https://github.com/wndus0212'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/83656909?v=4'></a> | <a href = 'https://github.com/dynamite885'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/50672132?v=4'></a> | <a href = 'https://github.com/DaGoMi1'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/155869202?v=4'></a> | <a href = 'https://github.com/localman211'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/223304427?v=4'></a> | <a href = 'https://github.com/Choiyeonw00'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/105337438?v=4'></a> |
 
-# 역할 분배
+# 👥 역할 분배
 
 | **구승민** | **박주연** | **송정호** | **이다검** | **이성재** | **최연우** |
 | --- | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@
 | 배포 자동화 구축 | Frontend | ERD 설계 | Model Serving | clustering | EDA |
 | GitHub 관리 |  |  |  |  | LLM 기반 설명 설계 |
 
-# 프로젝트 타임라인
+# ⌛ 프로젝트 타임라인
 
 | 날짜 (2026) | 내용 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"> <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"> <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">  <img src="[https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white)"> <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=PostgreSQL&logoColor=white"> <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
 
-# 주요 구현 기능
+# 🌟 주요 구현 기능
 
 1. 오디오 피처 슬라이더를 유저가 오디오 피쳐 선택
 2. 후보군 음악 pgvector 검색 및 유저 노출
@@ -48,7 +48,7 @@
 4. 선택된 곡들을 입력으로 넣어 Faiss 검색과 DeepFM two-stage 방식으로 플레이리스트 생성
 5. 생성된 플레이리스트 기반으로 레이더차트와 클러스터맵 생성
 
-# 아키텍처
+# 🔎 아키텍처
 
 ### 서비스 아키텍처
 
@@ -62,7 +62,7 @@
 
 <img width="1824" height="698" alt="image" src="https://github.com/user-attachments/assets/fe3aec93-2b50-4686-a5b3-b780a29292cd" />
 
-# 파일 구조
+# 📁 파일 구조
 
 ```
 .
@@ -155,7 +155,7 @@ frontend/
 ```
 </details>
 
-# 모델
+# 🤖 모델
 
 ## 모델 선정
 
@@ -185,7 +185,7 @@ Faiss 검색 시 입력 곡들의 평균 벡터를 활용하여 계산을 하였
 
 이후 개별 곡의 벡터도 추가함으로써 유저가 가진 여러 장르적 취향이나 특징을 후보군에 포함 시킬 수 있게 함
 
-# 결과
+# 🎯 결과
 
 성능 비교
 
@@ -195,7 +195,7 @@ Faiss 검색 시 입력 곡들의 평균 벡터를 활용하여 계산을 하였
 | --- | --- | --- |
 |  0.0191 | 0.2023 | 0.2601 |
 
-# 프로젝트 재현
+# 📌 프로젝트 재현
 
 ### Getting Started
 
@@ -226,9 +226,9 @@ $ cp ./backend/.env.example .env
 $ docker compose up -d
 ```
 
-## 라이선스 및 출처 표기
+# 📄 라이선스 및 출처 표기
 
-### 데이터 (Data)
+## 데이터 (Data)
 
 본 프로젝트는 Kaggle에서 제공되는 **Spotify_1Million_Tracks** 데이터를 활용하였습니다. 해당 데이터는 **Open Data Commons Attribution License (ODC-By) v1.0** 라이선스 규정을 따릅니다.
 
