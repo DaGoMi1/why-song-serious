@@ -1,16 +1,10 @@
-# README 작성
-
----
-
 # 🎵 **Why Song Serious?**
-
----
 
 왜 이 음악이 추천되었을까요?
 
 취향을 기반으로 음악을 탐색하고 시각화하는 서비스입니다!
 
-![프로젝트 시현.gif](attachment:e538d999-afec-428b-8d09-635c9ac49d9d:프로젝트_시현.gif)
+![Project](https://github.com/user-attachments/assets/e0795bca-f39d-4e72-8fd5-47969f7bcf92)
 
 # 😀 팀 소개
 
@@ -22,9 +16,9 @@
 
 | **구승민** | **박주연** | **송정호** | **이다검** | **이성재** | **최연우** |
 | --- | --- | --- | --- | --- | --- |
-|   • AWS EC2 서버 구축 |   • EDA |   • Backend |   • Modeling - Faiss & DeepFM |   • Modeling - CML, EASE |   • Modeling - LightGCN |
-|   • 배포 자동화 구축 |   • Frontend |   • ERD 설계 |   • Model Serving |   • clustering |  • EDA |
-|   • GitHub 관리 |  |  |  |  |   • LLM 기반 설명 설계 |
+| AWS EC2 서버 구축 | EDA | Backend | Modeling - Faiss & DeepFM | Modeling - CML, EASE | Modeling - LightGCN |
+| 배포 자동화 구축 | Frontend | ERD 설계 | Model Serving | clustering | EDA |
+| GitHub 관리 |  |  |  |  | LLM 기반 설명 설계 |
 
 # 프로젝트 타임라인
 
@@ -42,7 +36,7 @@
 | 2/5 | CI/CD 구축 완료, DB 데이터 업로드 및 클러스터 적용 |
 | 2/6 | 서비스 모델 서빙, 발표자료 작성, 프로젝트 완성 |
 
-# **🛠️**기술 스택
+# 🛠️ 기술 스택
 
 <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"> <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"> <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">  <img src="[https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white)"> <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=PostgreSQL&logoColor=white"> <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
 
