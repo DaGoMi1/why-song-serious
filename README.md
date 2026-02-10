@@ -1,3 +1,73 @@
+# README 작성
+
+---
+
+# 🎵 **Why Song Serious?**
+
+---
+
+왜 이 음악이 추천되었을까요?
+
+취향을 기반으로 음악을 탐색하고 시각화하는 서비스입니다!
+
+![프로젝트 시현.gif](attachment:e538d999-afec-428b-8d09-635c9ac49d9d:프로젝트_시현.gif)
+
+# 😀 팀 소개
+
+| 구승민 | 박주연 | 송정호 | 이다검 | 이성재 | 최연우 |
+| --- | --- | --- | --- | --- | --- |
+| <a href = 'https://github.com/gsmin02'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/86878502?v=4'></a> | <a href = 'https://github.com/wndus0212'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/83656909?v=4'></a> | <a href = 'https://github.com/dynamite885'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/50672132?v=4'></a> | <a href = 'https://github.com/DaGoMi1'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/155869202?v=4'></a> | <a href = 'https://github.com/localman211'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/223304427?v=4'></a> | <a href = 'https://github.com/Choiyeonw00'><img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/105337438?v=4'></a> |
+
+# 역할 분배
+
+| **구승민** | **박주연** | **송정호** | **이다검** | **이성재** | **최연우** |
+| --- | --- | --- | --- | --- | --- |
+|   • AWS EC2 서버 구축 |   • EDA |   • Backend |   • Modeling - Faiss & DeepFM |   • Modeling - CML, EASE |   • Modeling - LightGCN |
+|   • 배포 자동화 구축 |   • Frontend |   • ERD 설계 |   • Model Serving |   • clustering |  • EDA |
+|   • GitHub 관리 |  |  |  |  |   • LLM 기반 설명 설계 |
+
+# 프로젝트 타임라인
+
+| 날짜 (2026) | 내용 |
+| --- | --- |
+| 1/16 | 아이디어 선정, 핵심 기능 선정 |
+| 1/20 | 유저 시나리오 정리 |
+| 1/22 | 와이어프레임, 플로우차트, ERD, API 명세 작성 |
+| 1/27 | 데이터셋 및 평가지표 선정 |
+| 1/29 | 프론트 디자인 제작, EC2 서버 구축 |
+| 1/30 | 데드라인 설정, 데이터 전달 형식 동기화 |
+| 2/2 | 학습 모델 테스트, 프론트 및 백엔드 연동 |
+| 2/3 | 프로토타입 서빙, 추천 곡 목록 수 지정 |
+| 2/4 | 모델 입력 구조 변경, 클러스터 기능 구현 |
+| 2/5 | CI/CD 구축 완료, DB 데이터 업로드 및 클러스터 적용 |
+| 2/6 | 서비스 모델 서빙, 발표자료 작성, 프로젝트 완성 |
+
+# **🛠️**기술 스택
+
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"> <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"> <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">  <img src="[https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white)"> <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=PostgreSQL&logoColor=white"> <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
+
+# 주요 구현 기능
+
+1. 오디오 피처 슬라이더를 유저가 오디오 피쳐 선택
+2. 후보군 음악 PGVector 검색 및 유저 노출
+3. 곡 선택
+4. 선택된 곡들을 입력으로 넣어 Faiss 검색과 DeepFM two-stage 방식으로 플레이리스트 생성
+5. 생성된 플레이리스트 기반으로 레이더차트와 클러스터맵 생성
+
+# 아키텍처
+
+### 서비스 아키텍처
+
+![image.png](attachment:6a49d2f5-fe10-4886-a0bc-ca9ef793461b:image.png)
+
+### 모델 아키텍처
+
+![image.png](attachment:a74e7308-dbbd-44ec-a373-3326919e64f3:image.png)
+
+### 설명 가능성 알고리즘
+
+![image.png](attachment:39dbe90a-6f63-4afc-8846-3b844eb5bfe1:image.png)
+
 # 파일 구조
 
 ```
