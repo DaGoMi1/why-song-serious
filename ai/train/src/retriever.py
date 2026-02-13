@@ -84,16 +84,41 @@ class Retriever:
         candidates = self.item_meta_enc.iloc[unique_indices].copy()
         candidates = candidates[~candidates['id'].isin(song_ids)]
         
-        # PID 인코딩
+        encoded_pid = self.find_best_pid(song_ids)
+
+        if 'pid' in candidates.columns:
+            candidates = candidates.drop(columns=['pid'])
+        
+        # 맨 앞에 인코딩된 pid 정수값 삽입
+        candidates.insert(0, 'pid', encoded_pid)
+        
+        # 최종 리턴 
+        return candidates.head(self.retriever_k)
+    
+    def find_best_pid(self, song_ids):
+        """시드 곡들과 유사한 PID를 찾아 '인코딩된 정수'로 반환"""
+        # 입력된 인코딩 ID -> 원본 ID로 디코딩
+        decoded_ids = self.label_encoders['id'].inverse_transform(song_ids)
+        seed_songs = self.item_meta[self.item_meta['id'].isin(decoded_ids)]
+        
+        if seed_songs.empty:
+            best_pid_raw = 824067
+        else:
+            # 거리 기반 최적 PID(원본 번호) 탐색
+            seed_mean = seed_songs[self.audio_cols].mean().values.reshape(1, -1)
+            scaled_seed_mean = self.scaler.transform(seed_mean).astype('float32')
+            _, indices = self.pid_index.search(np.ascontiguousarray(scaled_seed_mean), 1)
+            
+            # 검색 결과가 있으면 해당 PID 추출, 없으면 기본값
+            best_pid_raw = self.pid_list[indices[0][0]] if indices[0][0] != -1 else 824067
+
+        # 찾은 원본 PID를 레이블 인코더로 인코딩 (문자열 변환 후 인코딩)
         pid_encoder = self.label_encoders['pid']
-        pid_str = str(8)
+        pid_str = str(best_pid_raw)
         
         if pid_str in pid_encoder.classes_:
             encoded_pid = pid_encoder.transform([pid_str])[0]
         else:
-            # 처음 보는 유저
-            encoded_pid = 0
+            encoded_pid = 0 
             
-        candidates['pid'] = encoded_pid
-        
-        return candidates.head(self.retriever_k)
+        return encoded_pid
