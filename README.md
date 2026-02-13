@@ -190,6 +190,7 @@ Faiss 검색 시 입력 곡들의 평균 벡터를 활용하여 계산을 하였
 성능 비교
 
 평가 지표: Recall@10
+
 DeepFM은 Cold-Start 상황을 가정한 테스트 결과 (처음 보는 유저)
 
 | DeepFM | LightGCN | EASE |
