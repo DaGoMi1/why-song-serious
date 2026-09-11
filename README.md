@@ -1,8 +1,17 @@
 # 🎵 **Why Song Serious?**
 
-왜 이 음악이 추천되었을까요?
+취향 기반 음악 탐색·추천·시각화 서비스  
+**Boostcamp AI Tech 최종 프로젝트** (팀) · 원본: [boostcamp 레포](https://github.com/boostcampaitech8/pro-recsys-finalproject-recsys-03)
 
-취향을 기반으로 음악을 탐색하고 시각화하는 서비스입니다!
+## 내 기여
+- FAISS 후보 검색 + DeepFM 랭킹 **two-stage** 추천
+- Feature binning, Focal Loss, 검색 다양성(개별 벡터) 개선
+- 추천 모델 **서빙** 연동
+
+## 한 줄 요약
+후보군은 FAISS로 빠르게 뽑고, DeepFM으로 순위를 매깁니다.  
+오프라인 Recall만 보면 EASE 등이 높지만, 서비스는 **저지연 후보 생성 + 피처 기반 랭킹(콜드스타트)** 을 위해 two-stage를 사용했습니다.
+왜 이 음악이 추천되었을까요?
 
 ![Project](https://github.com/user-attachments/assets/e0795bca-f39d-4e72-8fd5-47969f7bcf92)
 
@@ -211,8 +220,8 @@ DeepFM은 Cold-Start 상황을 가정한 테스트 결과 (처음 보는 유저)
 ### Repository Clone
 
 ```bash
-$ git clone https://github.com/boostcampaitech8/pro-recsys-finalproject-recsys-03.git
-$ cd pro-recsys-finalproject-recsys-03
+$ git clone https://github.com/DaGoMi1/why-song-serious.git
+$ cd why-song-serious
 ```
 
 ### Environment Setup (.env)
