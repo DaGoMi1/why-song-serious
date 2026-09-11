@@ -11,7 +11,6 @@
 ## 한 줄 요약
 후보군은 FAISS로 빠르게 뽑고, DeepFM으로 순위를 매깁니다.  
 오프라인 Recall만 보면 EASE 등이 높지만, 서비스는 **저지연 후보 생성 + 피처 기반 랭킹(콜드스타트)** 을 위해 two-stage를 사용했습니다.
-왜 이 음악이 추천되었을까요?
 
 ![Project](https://github.com/user-attachments/assets/e0795bca-f39d-4e72-8fd5-47969f7bcf92)
 
